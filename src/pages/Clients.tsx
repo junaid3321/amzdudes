@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ClientList } from '@/components/dashboard/ClientList';
 import { mockClients } from '@/data/mockData';
@@ -10,9 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Filter, Download, Plus } from 'lucide-react';
+import { Search, Filter, Download } from 'lucide-react';
+import { AddClientModal } from '@/components/clients/AddClientModal';
+import type { Client } from '@/types';
 
 const Clients = () => {
+  const [clients, setClients] = useState<Client[]>(mockClients);
+
+  const handleClientAdded = (newClient: Client) => {
+    setClients((prev) => [newClient, ...prev]);
+  };
   return (
     <AppLayout 
       title="Clients" 
@@ -75,13 +83,14 @@ const Clients = () => {
             <Download className="w-4 h-4" />
             Export
           </Button>
+          <AddClientModal onClientAdded={handleClientAdded} />
         </div>
       </div>
 
       {/* Client List */}
       <ClientList 
-        clients={mockClients} 
-        title={`${mockClients.length} Clients`}
+        clients={clients} 
+        title={`${clients.length} Clients`}
         showViewAll={false}
       />
     </AppLayout>
