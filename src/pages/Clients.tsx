@@ -11,9 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Filter, Download, X } from 'lucide-react';
+import { Search, Download, X, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AddClientModal } from '@/components/clients/AddClientModal';
 import type { Client } from '@/types';
+
+type SortField = 'name' | 'healthScore' | 'revenue30Days' | 'mrr';
+type SortDirection = 'asc' | 'desc';
+
+const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50];
 
 const Clients = () => {
   const [clients, setClients] = useState<Client[]>(mockClients);
@@ -21,31 +26,56 @@ const Clients = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const [healthFilter, setHealthFilter] = useState('all');
   const [managerFilter, setManagerFilter] = useState('all');
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const handleClientAdded = (newClient: Client) => {
     setClients((prev) => [newClient, ...prev]);
   };
 
-  const filteredClients = useMemo(() => {
-    return clients.filter((client) => {
-      // Search filter
+  const filteredAndSortedClients = useMemo(() => {
+    // First filter
+    const filtered = clients.filter((client) => {
       const matchesSearch = searchQuery === '' || 
         client.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         client.name.toLowerCase().includes(searchQuery.toLowerCase());
-
-      // Type filter
       const matchesType = typeFilter === 'all' || client.type === typeFilter;
-
-      // Health status filter
       const matchesHealth = healthFilter === 'all' || client.healthStatus === healthFilter;
-
-      // Manager filter
       const matchesManager = managerFilter === 'all' || 
         client.assignedManager.toLowerCase().includes(managerFilter.toLowerCase());
 
       return matchesSearch && matchesType && matchesHealth && matchesManager;
     });
-  }, [clients, searchQuery, typeFilter, healthFilter, managerFilter]);
+
+    // Then sort
+    const sorted = [...filtered].sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case 'name':
+          comparison = a.companyName.localeCompare(b.companyName);
+          break;
+        case 'healthScore':
+          comparison = a.healthScore - b.healthScore;
+          break;
+        case 'revenue30Days':
+          comparison = a.revenue30Days - b.revenue30Days;
+          break;
+        case 'mrr':
+          comparison = a.mrr - b.mrr;
+          break;
+      }
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return sorted;
+  }, [clients, searchQuery, typeFilter, healthFilter, managerFilter, sortField, sortDirection]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAndSortedClients.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedClients = filteredAndSortedClients.slice(startIndex, startIndex + itemsPerPage);
 
   const hasActiveFilters = searchQuery !== '' || typeFilter !== 'all' || healthFilter !== 'all' || managerFilter !== 'all';
 
@@ -54,6 +84,25 @@ const Clients = () => {
     setTypeFilter('all');
     setHealthFilter('all');
     setManagerFilter('all');
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (value: string) => {
+    const [field, direction] = value.split('-') as [SortField, SortDirection];
+    setSortField(field);
+    setSortDirection(direction);
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+  };
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setCurrentPage(1);
   };
 
   return (
@@ -69,11 +118,14 @@ const Clients = () => {
             placeholder="Search clients..." 
             className="pl-9"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
 
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
+        <Select value={typeFilter} onValueChange={handleFilterChange(setTypeFilter)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Client Type" />
           </SelectTrigger>
@@ -87,7 +139,7 @@ const Clients = () => {
           </SelectContent>
         </Select>
 
-        <Select value={healthFilter} onValueChange={setHealthFilter}>
+        <Select value={healthFilter} onValueChange={handleFilterChange(setHealthFilter)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Health Status" />
           </SelectTrigger>
@@ -100,7 +152,7 @@ const Clients = () => {
           </SelectContent>
         </Select>
 
-        <Select value={managerFilter} onValueChange={setManagerFilter}>
+        <Select value={managerFilter} onValueChange={handleFilterChange(setManagerFilter)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Assigned To" />
           </SelectTrigger>
@@ -109,6 +161,23 @@ const Clients = () => {
             <SelectItem value="alex">Alex Thompson</SelectItem>
             <SelectItem value="jordan">Jordan Martinez</SelectItem>
             <SelectItem value="casey">Casey Williams</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={`${sortField}-${sortDirection}`} onValueChange={handleSortChange}>
+          <SelectTrigger className="w-[180px]">
+            <ArrowUpDown className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+            <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+            <SelectItem value="healthScore-desc">Health (High-Low)</SelectItem>
+            <SelectItem value="healthScore-asc">Health (Low-High)</SelectItem>
+            <SelectItem value="revenue30Days-desc">Revenue (High-Low)</SelectItem>
+            <SelectItem value="revenue30Days-asc">Revenue (Low-High)</SelectItem>
+            <SelectItem value="mrr-desc">MRR (High-Low)</SelectItem>
+            <SelectItem value="mrr-asc">MRR (Low-High)</SelectItem>
           </SelectContent>
         </Select>
 
@@ -129,10 +198,56 @@ const Clients = () => {
 
       {/* Client List */}
       <ClientList 
-        clients={filteredClients} 
-        title={`${filteredClients.length} Client${filteredClients.length !== 1 ? 's' : ''}${hasActiveFilters ? ' (filtered)' : ''}`}
+        clients={paginatedClients} 
+        title={`${filteredAndSortedClients.length} Client${filteredAndSortedClients.length !== 1 ? 's' : ''}${hasActiveFilters ? ' (filtered)' : ''}`}
         showViewAll={false}
       />
+
+      {/* Pagination */}
+      {filteredAndSortedClients.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-4 px-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Show</span>
+            <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
+              <SelectTrigger className="w-[70px] h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                  <SelectItem key={option} value={String(option)}>{option}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span>per page</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredAndSortedClients.length)} of {filteredAndSortedClients.length}
+            </span>
+            <div className="flex items-center gap-1">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 };
