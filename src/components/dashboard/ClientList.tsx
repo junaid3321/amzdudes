@@ -82,28 +82,30 @@ export function ClientList({ clients, title = 'Clients', showViewAll = true }: C
             </div>
 
             {/* Metrics */}
-            <div className="hidden lg:flex items-center gap-6">
-              <div className="text-right w-24">
+            <div className="hidden lg:grid grid-cols-3 gap-4 w-[280px] shrink-0">
+              <div className="text-right">
                 <p className="text-sm font-medium text-foreground">{formatCurrency(client.revenue30Days)}</p>
                 <p className="text-xs text-muted-foreground">30d Revenue</p>
               </div>
-              <div className="text-right w-16">
+              <div className="text-right">
                 <p className="text-sm font-medium text-foreground">{client.roas.toFixed(2)}x</p>
                 <p className="text-xs text-muted-foreground">ROAS</p>
               </div>
-              <div className="text-right w-20">
+              <div className="text-right">
                 <p className="text-sm font-medium text-foreground">{formatCurrency(client.mrr)}</p>
                 <p className="text-xs text-muted-foreground">MRR</p>
               </div>
             </div>
 
-            {/* Alerts */}
-            {client.alertsActive > 0 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-destructive/10">
-                <Bell className="w-3.5 h-3.5 text-destructive" />
-                <span className="text-xs font-medium text-destructive">{client.alertsActive}</span>
-              </div>
-            )}
+            {/* Alerts - fixed width container */}
+            <div className="w-12 shrink-0 flex justify-center">
+              {client.alertsActive > 0 ? (
+                <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-destructive/10">
+                  <Bell className="w-3.5 h-3.5 text-destructive" />
+                  <span className="text-xs font-medium text-destructive">{client.alertsActive}</span>
+                </div>
+              ) : null}
+            </div>
 
             {/* Actions */}
             <Button variant="ghost" size="icon" className="shrink-0">
