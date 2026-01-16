@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ClientList } from '@/components/dashboard/ClientList';
 import { mockClients } from '@/data/mockData';
@@ -11,16 +11,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Filter, Download } from 'lucide-react';
+import { Search, Filter, Download, X } from 'lucide-react';
 import { AddClientModal } from '@/components/clients/AddClientModal';
 import type { Client } from '@/types';
 
 const Clients = () => {
   const [clients, setClients] = useState<Client[]>(mockClients);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [healthFilter, setHealthFilter] = useState('all');
+  const [managerFilter, setManagerFilter] = useState('all');
 
   const handleClientAdded = (newClient: Client) => {
     setClients((prev) => [newClient, ...prev]);
   };
+
+  const filteredClients = useMemo(() => {
+    return clients.filter((client) => {
+      // Search filter
+      const matchesSearch = searchQuery === '' || 
+        client.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        client.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Type filter
+      const matchesType = typeFilter === 'all' || client.type === typeFilter;
+
+      // Health status filter
+      const matchesHealth = healthFilter === 'all' || client.healthStatus === healthFilter;
+
+      // Manager filter
+      const matchesManager = managerFilter === 'all' || 
+        client.assignedManager.toLowerCase().includes(managerFilter.toLowerCase());
+
+      return matchesSearch && matchesType && matchesHealth && matchesManager;
+    });
+  }, [clients, searchQuery, typeFilter, healthFilter, managerFilter]);
+
+  const hasActiveFilters = searchQuery !== '' || typeFilter !== 'all' || healthFilter !== 'all' || managerFilter !== 'all';
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setTypeFilter('all');
+    setHealthFilter('all');
+    setManagerFilter('all');
+  };
+
   return (
     <AppLayout 
       title="Clients" 
@@ -33,10 +68,12 @@ const Clients = () => {
           <Input 
             placeholder="Search clients..." 
             className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <Select defaultValue="all">
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Client Type" />
           </SelectTrigger>
@@ -50,7 +87,7 @@ const Clients = () => {
           </SelectContent>
         </Select>
 
-        <Select defaultValue="all">
+        <Select value={healthFilter} onValueChange={setHealthFilter}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Health Status" />
           </SelectTrigger>
@@ -63,7 +100,7 @@ const Clients = () => {
           </SelectContent>
         </Select>
 
-        <Select defaultValue="all">
+        <Select value={managerFilter} onValueChange={setManagerFilter}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Assigned To" />
           </SelectTrigger>
@@ -76,9 +113,12 @@ const Clients = () => {
         </Select>
 
         <div className="flex items-center gap-2 ml-auto">
-          <Button variant="outline" size="icon">
-            <Filter className="w-4 h-4" />
-          </Button>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+              <X className="w-4 h-4" />
+              Clear
+            </Button>
+          )}
           <Button variant="outline" className="gap-2">
             <Download className="w-4 h-4" />
             Export
@@ -89,8 +129,8 @@ const Clients = () => {
 
       {/* Client List */}
       <ClientList 
-        clients={clients} 
-        title={`${clients.length} Clients`}
+        clients={filteredClients} 
+        title={`${filteredClients.length} Client${filteredClients.length !== 1 ? 's' : ''}${hasActiveFilters ? ' (filtered)' : ''}`}
         showViewAll={false}
       />
     </AppLayout>
