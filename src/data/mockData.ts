@@ -1,4 +1,16 @@
-import { Client, Alert, Activity, Opportunity, TeamMember, DashboardMetrics } from '@/types';
+import { 
+  Client, 
+  Alert, 
+  Activity, 
+  Opportunity, 
+  TeamMember, 
+  DashboardMetrics, 
+  Notification,
+  ReportTemplate,
+  Report,
+  ReportSchedule,
+  PerformanceDataPoint 
+} from '@/types';
 
 export const mockClients: Client[] = [
   {
@@ -303,4 +315,230 @@ export const mockDashboardMetrics: DashboardMetrics = {
   revenueGenerated30Days: 892000,
   opportunitiesPipeline: 42,
   teamUtilization: 78
+};
+
+// Notification Mock Data
+export const mockNotifications: Notification[] = [
+  {
+    id: 'n1',
+    type: 'alert',
+    title: 'Critical Alert',
+    message: 'Listing Suppressed - ASIN B08XYZ123 for FastShip Wholesale',
+    timestamp: '2026-01-16T08:30:00Z',
+    read: false,
+    alertId: 'a1',
+    clientId: '5',
+    clientName: 'FastShip Wholesale',
+    priority: 'high',
+    actionUrl: '/clients/5'
+  },
+  {
+    id: 'n2',
+    type: 'alert',
+    title: 'Inventory Warning',
+    message: '3 SKUs below 7 days for HomeStyle Living',
+    timestamp: '2026-01-16T06:15:00Z',
+    read: false,
+    alertId: 'a2',
+    clientId: '3',
+    clientName: 'HomeStyle Living',
+    priority: 'high',
+    actionUrl: '/clients/3'
+  },
+  {
+    id: 'n3',
+    type: 'success',
+    title: 'Report Sent',
+    message: 'Weekly Snapshot for NaturaCare Supplements has been delivered',
+    timestamp: '2026-01-15T09:00:00Z',
+    read: true,
+    clientId: '1',
+    clientName: 'NaturaCare Supplements',
+    priority: 'low'
+  },
+  {
+    id: 'n4',
+    type: 'update',
+    title: 'Opportunity Identified',
+    message: 'Competitor Out of Stock - potential revenue opportunity for Outdoor Adventures',
+    timestamp: '2026-01-16T10:00:00Z',
+    read: false,
+    clientId: '6',
+    clientName: 'Outdoor Adventures',
+    priority: 'medium',
+    actionUrl: '/opportunities'
+  },
+  {
+    id: 'n5',
+    type: 'system',
+    title: 'System Update',
+    message: 'New report templates are now available',
+    timestamp: '2026-01-14T15:00:00Z',
+    read: true,
+    priority: 'low'
+  }
+];
+
+// Report Templates
+export const mockReportTemplates: ReportTemplate[] = [
+  {
+    id: 'tpl1',
+    name: 'Weekly Snapshot',
+    description: 'Quick weekly overview with key metrics and alerts',
+    isDefault: true,
+    sections: [
+      { id: 's1', name: 'Executive Summary', type: 'text', enabled: true, order: 1 },
+      { id: 's2', name: 'Key Metrics', type: 'metrics', enabled: true, order: 2 },
+      { id: 's3', name: 'Revenue Chart', type: 'chart', enabled: true, order: 3 },
+      { id: 's4', name: 'Active Alerts', type: 'alerts', enabled: true, order: 4 },
+      { id: 's5', name: 'Actions Taken', type: 'table', enabled: true, order: 5 }
+    ]
+  },
+  {
+    id: 'tpl2',
+    name: 'Monthly Business Review',
+    description: 'Comprehensive monthly report with detailed analytics',
+    isDefault: false,
+    sections: [
+      { id: 's1', name: 'Executive Summary', type: 'text', enabled: true, order: 1 },
+      { id: 's2', name: 'Key Performance Indicators', type: 'metrics', enabled: true, order: 2 },
+      { id: 's3', name: 'Revenue Trends', type: 'chart', enabled: true, order: 3 },
+      { id: 's4', name: 'Advertising Performance', type: 'chart', enabled: true, order: 4 },
+      { id: 's5', name: 'Alerts & Resolutions', type: 'alerts', enabled: true, order: 5 },
+      { id: 's6', name: 'Opportunities Pipeline', type: 'opportunities', enabled: true, order: 6 },
+      { id: 's7', name: 'Activity Log', type: 'table', enabled: true, order: 7 },
+      { id: 's8', name: 'Next Month Goals', type: 'text', enabled: true, order: 8 }
+    ]
+  },
+  {
+    id: 'tpl3',
+    name: 'Quarterly Strategic Review',
+    description: 'Strategic quarterly report for executive stakeholders',
+    isDefault: false,
+    sections: [
+      { id: 's1', name: 'Quarter Overview', type: 'text', enabled: true, order: 1 },
+      { id: 's2', name: 'Performance Summary', type: 'metrics', enabled: true, order: 2 },
+      { id: 's3', name: 'Revenue Analysis', type: 'chart', enabled: true, order: 3 },
+      { id: 's4', name: 'YoY Comparison', type: 'chart', enabled: true, order: 4 },
+      { id: 's5', name: 'Strategic Opportunities', type: 'opportunities', enabled: true, order: 5 },
+      { id: 's6', name: 'Competitive Analysis', type: 'table', enabled: true, order: 6 },
+      { id: 's7', name: 'Action Items', type: 'table', enabled: true, order: 7 },
+      { id: 's8', name: 'Next Quarter Strategy', type: 'text', enabled: true, order: 8 }
+    ]
+  }
+];
+
+// Report Mock Data
+export const mockReports: Report[] = [
+  {
+    id: 'r1',
+    name: 'Weekly Snapshot - NaturaCare Supplements',
+    type: 'weekly',
+    clientId: '1',
+    clientName: 'NaturaCare Supplements',
+    status: 'sent',
+    templateId: 'tpl1',
+    createdAt: '2026-01-10T08:00:00Z',
+    sentDate: '2026-01-10T09:00:00Z',
+    emailRecipients: ['sarah@naturacare.com']
+  },
+  {
+    id: 'r2',
+    name: 'Monthly Business Review - January 2026',
+    type: 'monthly',
+    clientId: '2',
+    clientName: 'TechGear Pro',
+    status: 'scheduled',
+    templateId: 'tpl2',
+    createdAt: '2026-01-15T10:00:00Z',
+    scheduledDate: '2026-02-01T09:00:00Z',
+    emailRecipients: ['michael@techgearpro.com', 'team@techgearpro.com']
+  },
+  {
+    id: 'r3',
+    name: 'Weekly Snapshot - HomeStyle Living',
+    type: 'weekly',
+    clientId: '3',
+    clientName: 'HomeStyle Living',
+    status: 'draft',
+    templateId: 'tpl1',
+    createdAt: '2026-01-16T14:00:00Z',
+    emailRecipients: ['emma@homestyleliving.com']
+  },
+  {
+    id: 'r4',
+    name: 'Quarterly Strategic Review - Q4 2025',
+    type: 'quarterly',
+    clientId: '4',
+    clientName: 'Seoul Snacks Co',
+    status: 'sent',
+    templateId: 'tpl3',
+    createdAt: '2026-01-05T08:00:00Z',
+    sentDate: '2026-01-05T10:00:00Z',
+    emailRecipients: ['david@seoulsnacks.com']
+  }
+];
+
+// Report Schedules
+export const mockReportSchedules: ReportSchedule[] = [
+  {
+    id: 'rs1',
+    clientId: '1',
+    clientName: 'NaturaCare Supplements',
+    templateId: 'tpl1',
+    frequency: 'weekly',
+    dayOfWeek: 1, // Monday
+    time: '09:00',
+    emailRecipients: ['sarah@naturacare.com'],
+    enabled: true,
+    nextRunDate: '2026-01-20T09:00:00Z'
+  },
+  {
+    id: 'rs2',
+    clientId: '2',
+    clientName: 'TechGear Pro',
+    templateId: 'tpl2',
+    frequency: 'monthly',
+    dayOfMonth: 1,
+    time: '09:00',
+    emailRecipients: ['michael@techgearpro.com'],
+    enabled: true,
+    nextRunDate: '2026-02-01T09:00:00Z'
+  },
+  {
+    id: 'rs3',
+    clientId: '4',
+    clientName: 'Seoul Snacks Co',
+    templateId: 'tpl3',
+    frequency: 'quarterly',
+    dayOfMonth: 1,
+    time: '10:00',
+    emailRecipients: ['david@seoulsnacks.com'],
+    enabled: true,
+    nextRunDate: '2026-04-01T10:00:00Z'
+  }
+];
+
+// Performance Data Generator
+export const generatePerformanceData = (clientId: string): PerformanceDataPoint[] => {
+  const data: PerformanceDataPoint[] = [];
+  const baseRevenue = mockClients.find(c => c.id === clientId)?.revenue30Days || 20000;
+  const baseAdSpend = mockClients.find(c => c.id === clientId)?.adSpend30Days || 5000;
+  
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const variance = 0.8 + Math.random() * 0.4; // 80% to 120% variance
+    
+    data.push({
+      date: date.toISOString().split('T')[0],
+      revenue: Math.round((baseRevenue / 30) * variance),
+      adSpend: Math.round((baseAdSpend / 30) * variance),
+      orders: Math.round(15 * variance),
+      sessions: Math.round(500 * variance),
+      conversions: Math.round(25 * variance)
+    });
+  }
+  
+  return data;
 };
