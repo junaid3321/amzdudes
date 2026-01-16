@@ -82,16 +82,16 @@ export function ClientList({ clients, title = 'Clients', showViewAll = true }: C
             </div>
 
             {/* Metrics */}
-            <div className="hidden lg:flex items-center gap-8">
-              <div className="text-right">
+            <div className="hidden lg:flex items-center gap-6">
+              <div className="text-right w-24">
                 <p className="text-sm font-medium text-foreground">{formatCurrency(client.revenue30Days)}</p>
                 <p className="text-xs text-muted-foreground">30d Revenue</p>
               </div>
-              <div className="text-right">
+              <div className="text-right w-16">
                 <p className="text-sm font-medium text-foreground">{client.roas.toFixed(2)}x</p>
                 <p className="text-xs text-muted-foreground">ROAS</p>
               </div>
-              <div className="text-right">
+              <div className="text-right w-20">
                 <p className="text-sm font-medium text-foreground">{formatCurrency(client.mrr)}</p>
                 <p className="text-xs text-muted-foreground">MRR</p>
               </div>
