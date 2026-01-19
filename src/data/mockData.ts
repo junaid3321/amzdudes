@@ -4,7 +4,13 @@ import {
   Activity, 
   Opportunity, 
   TeamMember, 
-  DashboardMetrics, 
+  DashboardMetrics,
+  TeamLead,
+  HiringMetrics,
+  JobPost,
+  Interview,
+  NewHire,
+  ClientFeedback,
   Notification,
   ReportTemplate,
   Report,
@@ -308,14 +314,242 @@ export const mockTeamMembers: TeamMember[] = [
 
 export const mockDashboardMetrics: DashboardMetrics = {
   totalClients: 35,
+  clientsAddedThisMonth: 5,
+  clientsLostThisMonth: 2,
   totalMRR: 56100,
-  avgHealthScore: 73,
-  activeAlerts: 11,
-  resolvedAlerts7Days: 28,
-  revenueGenerated30Days: 892000,
+  mrrChange: 12,
+  avgClientScore: 8.4,
+  attendanceScore: 94,
+  quarterlyRevenue: 892000,
+  currentQuarter: 'Q1 2026',
   opportunitiesPipeline: 42,
-  teamUtilization: 78
+  opportunitiesPotential: 127000,
+  teamUtilization: 83
 };
+
+export const mockTeamLeads: TeamLead[] = [
+  {
+    id: 'tl1',
+    name: 'Asad',
+    department: 'Brand Management',
+    email: 'asad@amzdudes.com',
+    teamSize: 5,
+    utilization: 85,
+    lastUpdated: '2026-01-18'
+  },
+  {
+    id: 'tl2',
+    name: 'Munaam',
+    department: 'Account Management',
+    email: 'munaam@amzdudes.com',
+    teamSize: 4,
+    utilization: 78,
+    lastUpdated: '2026-01-18'
+  },
+  {
+    id: 'tl3',
+    name: 'SHK',
+    department: 'Operations',
+    email: 'shk@amzdudes.com',
+    teamSize: 6,
+    utilization: 92,
+    lastUpdated: '2026-01-17'
+  },
+  {
+    id: 'tl4',
+    name: 'Aqib',
+    department: 'Wholesale & TikTok',
+    email: 'aqib@amzdudes.com',
+    teamSize: 4,
+    utilization: 70,
+    lastUpdated: '2026-01-18'
+  },
+  {
+    id: 'tl5',
+    name: 'Osama',
+    department: 'Wholesale Team',
+    email: 'osama@amzdudes.com',
+    teamSize: 3,
+    utilization: 88,
+    lastUpdated: '2026-01-16'
+  },
+  {
+    id: 'tl6',
+    name: 'Junaid',
+    department: 'Sales',
+    email: 'junaid@amzdudes.com',
+    teamSize: 4,
+    utilization: 76,
+    lastUpdated: '2026-01-18'
+  }
+];
+
+export const mockHiringMetrics: HiringMetrics = {
+  jobPostsActive: 4,
+  interviewsScheduled: 6,
+  interviewsCompleted: 12,
+  newHiresThisMonth: 2
+};
+
+export const mockJobPosts: JobPost[] = [
+  {
+    id: 'jp1',
+    title: 'Amazon PPC Specialist',
+    department: 'Account Management',
+    status: 'active',
+    applicants: 23,
+    createdAt: '2026-01-10',
+    closingDate: '2026-02-10'
+  },
+  {
+    id: 'jp2',
+    title: 'Brand Manager',
+    department: 'Brand Management',
+    status: 'active',
+    applicants: 15,
+    createdAt: '2026-01-12'
+  },
+  {
+    id: 'jp3',
+    title: 'Wholesale Coordinator',
+    department: 'Wholesale Team',
+    status: 'active',
+    applicants: 8,
+    createdAt: '2026-01-15'
+  },
+  {
+    id: 'jp4',
+    title: 'Operations Assistant',
+    department: 'Operations',
+    status: 'paused',
+    applicants: 31,
+    createdAt: '2026-01-05'
+  }
+];
+
+export const mockInterviews: Interview[] = [
+  {
+    id: 'int1',
+    candidateName: 'Ahmed Khan',
+    candidateEmail: 'ahmed.khan@email.com',
+    jobPostId: 'jp1',
+    jobTitle: 'Amazon PPC Specialist',
+    status: 'scheduled',
+    scheduledAt: '2026-01-20T10:00:00',
+    interviewerName: 'Munaam'
+  },
+  {
+    id: 'int2',
+    candidateName: 'Sara Ali',
+    candidateEmail: 'sara.ali@email.com',
+    jobPostId: 'jp2',
+    jobTitle: 'Brand Manager',
+    status: 'scheduled',
+    scheduledAt: '2026-01-20T14:00:00',
+    interviewerName: 'Asad'
+  },
+  {
+    id: 'int3',
+    candidateName: 'Bilal Hassan',
+    candidateEmail: 'bilal.h@email.com',
+    jobPostId: 'jp1',
+    jobTitle: 'Amazon PPC Specialist',
+    status: 'completed',
+    scheduledAt: '2026-01-18T11:00:00',
+    interviewerName: 'Munaam',
+    notes: 'Strong candidate, good PPC experience'
+  }
+];
+
+export const mockNewHires: NewHire[] = [
+  {
+    id: 'nh1',
+    name: 'Fatima Zahra',
+    email: 'fatima@amzdudes.com',
+    position: 'Account Executive',
+    department: 'Account Management',
+    startDate: '2026-01-15',
+    status: 'onboarding',
+    manager: 'Munaam'
+  },
+  {
+    id: 'nh2',
+    name: 'Usman Malik',
+    email: 'usman@amzdudes.com',
+    position: 'TikTok Specialist',
+    department: 'Wholesale & TikTok',
+    startDate: '2026-01-08',
+    status: 'probation',
+    manager: 'Aqib'
+  }
+];
+
+export const mockClientFeedback: ClientFeedback[] = [
+  {
+    id: 'cf1',
+    clientId: '1',
+    clientName: 'NaturaCare Supplements',
+    score: 9,
+    feedback: 'Excellent service, very responsive team',
+    submittedAt: '2026-01-15'
+  },
+  {
+    id: 'cf2',
+    clientId: '2',
+    clientName: 'TechGear Pro',
+    score: 8,
+    feedback: 'Great results on PPC campaigns',
+    submittedAt: '2026-01-14'
+  },
+  {
+    id: 'cf3',
+    clientId: '3',
+    clientName: 'HomeStyle Living',
+    score: 7,
+    feedback: 'Good support but could improve communication',
+    submittedAt: '2026-01-12'
+  },
+  {
+    id: 'cf4',
+    clientId: '4',
+    clientName: 'Seoul Snacks Co',
+    score: 10,
+    feedback: 'Amazing work on our product launch!',
+    submittedAt: '2026-01-10'
+  },
+  {
+    id: 'cf5',
+    clientId: '5',
+    clientName: 'FastShip Wholesale',
+    score: 6,
+    feedback: 'Some delays in response time',
+    submittedAt: '2026-01-08'
+  },
+  {
+    id: 'cf6',
+    clientId: '1',
+    clientName: 'NaturaCare Supplements',
+    score: 9,
+    feedback: 'Consistently excellent',
+    submittedAt: '2025-12-15'
+  },
+  {
+    id: 'cf7',
+    clientId: '2',
+    clientName: 'TechGear Pro',
+    score: 8,
+    feedback: 'Very pleased with Q4 results',
+    submittedAt: '2025-12-10'
+  },
+  {
+    id: 'cf8',
+    clientId: '6',
+    clientName: 'Outdoor Adventures',
+    score: 9,
+    feedback: 'Great team to work with',
+    submittedAt: '2025-12-05'
+  }
+];
 
 // Notification Mock Data
 export const mockNotifications: Notification[] = [
