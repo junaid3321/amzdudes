@@ -4,7 +4,8 @@ import {
   Activity, 
   Opportunity, 
   TeamMember, 
-  DashboardMetrics, 
+  DashboardMetrics,
+  TeamLead,
   Notification,
   ReportTemplate,
   Report,
@@ -308,14 +309,69 @@ export const mockTeamMembers: TeamMember[] = [
 
 export const mockDashboardMetrics: DashboardMetrics = {
   totalClients: 35,
+  clientsAddedThisMonth: 5,
+  clientsLostThisMonth: 2,
   totalMRR: 56100,
-  avgHealthScore: 73,
-  activeAlerts: 11,
-  resolvedAlerts7Days: 28,
-  revenueGenerated30Days: 892000,
+  mrrChange: 12,
+  avgClientScore: 8.4,
+  attendanceScore: 94,
+  quarterlyRevenue: 892000,
+  currentQuarter: 'Q1 2026',
   opportunitiesPipeline: 42,
-  teamUtilization: 78
+  opportunitiesPotential: 127000,
+  interviewsAligned: 8,
+  jobPostsActive: 4,
+  interviewsScheduled: 6,
+  newHires: 2
 };
+
+export const mockTeamLeads: TeamLead[] = [
+  {
+    id: 'tl1',
+    name: 'Asad',
+    department: 'Brand Management',
+    email: 'asad@amzdudes.com',
+    teamSize: 5,
+    utilization: 85,
+    lastUpdated: '2026-01-18'
+  },
+  {
+    id: 'tl2',
+    name: 'Munaam',
+    department: 'Account Management',
+    email: 'munaam@amzdudes.com',
+    teamSize: 4,
+    utilization: 78,
+    lastUpdated: '2026-01-18'
+  },
+  {
+    id: 'tl3',
+    name: 'SHK',
+    department: 'Operations',
+    email: 'shk@amzdudes.com',
+    teamSize: 6,
+    utilization: 92,
+    lastUpdated: '2026-01-17'
+  },
+  {
+    id: 'tl4',
+    name: 'Aqib',
+    department: 'Wholesale & TikTok',
+    email: 'aqib@amzdudes.com',
+    teamSize: 4,
+    utilization: 70,
+    lastUpdated: '2026-01-18'
+  },
+  {
+    id: 'tl5',
+    name: 'Osama',
+    department: 'Wholesale Team',
+    email: 'osama@amzdudes.com',
+    teamSize: 3,
+    utilization: 88,
+    lastUpdated: '2026-01-16'
+  }
+];
 
 // Notification Mock Data
 export const mockNotifications: Notification[] = [

@@ -76,13 +76,39 @@ export interface TeamMember {
 
 export interface DashboardMetrics {
   totalClients: number;
+  clientsAddedThisMonth: number;
+  clientsLostThisMonth: number;
   totalMRR: number;
-  avgHealthScore: number;
-  activeAlerts: number;
-  resolvedAlerts7Days: number;
-  revenueGenerated30Days: number;
+  mrrChange: number; // percentage change vs last month
+  avgClientScore: number; // out of 10
+  attendanceScore: number; // percentage
+  quarterlyRevenue: number;
+  currentQuarter: string; // e.g., "Q1 2026"
   opportunitiesPipeline: number;
-  teamUtilization: number;
+  opportunitiesPotential: number;
+  interviewsAligned: number;
+  jobPostsActive: number;
+  interviewsScheduled: number;
+  newHires: number;
+}
+
+export interface TeamLead {
+  id: string;
+  name: string;
+  department: string;
+  email: string;
+  teamSize: number;
+  utilization: number; // percentage
+  lastUpdated: string;
+}
+
+export interface TeamUtilizationSubmission {
+  teamLeadId: string;
+  teamLeadName: string;
+  department: string;
+  utilization: number;
+  performanceNotes: string;
+  submittedAt: string;
 }
 
 // Notification System Types
