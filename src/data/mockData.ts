@@ -6,6 +6,11 @@ import {
   TeamMember, 
   DashboardMetrics,
   TeamLead,
+  HiringMetrics,
+  JobPost,
+  Interview,
+  NewHire,
+  ClientFeedback,
   Notification,
   ReportTemplate,
   Report,
@@ -319,10 +324,7 @@ export const mockDashboardMetrics: DashboardMetrics = {
   currentQuarter: 'Q1 2026',
   opportunitiesPipeline: 42,
   opportunitiesPotential: 127000,
-  interviewsAligned: 8,
-  jobPostsActive: 4,
-  interviewsScheduled: 6,
-  newHires: 2
+  teamUtilization: 83
 };
 
 export const mockTeamLeads: TeamLead[] = [
@@ -370,6 +372,125 @@ export const mockTeamLeads: TeamLead[] = [
     teamSize: 3,
     utilization: 88,
     lastUpdated: '2026-01-16'
+  }
+];
+
+export const mockHiringMetrics: HiringMetrics = {
+  jobPostsActive: 4,
+  interviewsScheduled: 6,
+  interviewsCompleted: 12,
+  newHiresThisMonth: 2
+};
+
+export const mockJobPosts: JobPost[] = [
+  {
+    id: 'jp1',
+    title: 'Amazon PPC Specialist',
+    department: 'Account Management',
+    status: 'active',
+    applicants: 23,
+    createdAt: '2026-01-10',
+    closingDate: '2026-02-10'
+  },
+  {
+    id: 'jp2',
+    title: 'Brand Manager',
+    department: 'Brand Management',
+    status: 'active',
+    applicants: 15,
+    createdAt: '2026-01-12'
+  },
+  {
+    id: 'jp3',
+    title: 'Wholesale Coordinator',
+    department: 'Wholesale Team',
+    status: 'active',
+    applicants: 8,
+    createdAt: '2026-01-15'
+  },
+  {
+    id: 'jp4',
+    title: 'Operations Assistant',
+    department: 'Operations',
+    status: 'paused',
+    applicants: 31,
+    createdAt: '2026-01-05'
+  }
+];
+
+export const mockInterviews: Interview[] = [
+  {
+    id: 'int1',
+    candidateName: 'Ahmed Khan',
+    candidateEmail: 'ahmed.khan@email.com',
+    jobPostId: 'jp1',
+    jobTitle: 'Amazon PPC Specialist',
+    status: 'scheduled',
+    scheduledAt: '2026-01-20T10:00:00',
+    interviewerName: 'Munaam'
+  },
+  {
+    id: 'int2',
+    candidateName: 'Sara Ali',
+    candidateEmail: 'sara.ali@email.com',
+    jobPostId: 'jp2',
+    jobTitle: 'Brand Manager',
+    status: 'scheduled',
+    scheduledAt: '2026-01-20T14:00:00',
+    interviewerName: 'Asad'
+  },
+  {
+    id: 'int3',
+    candidateName: 'Bilal Hassan',
+    candidateEmail: 'bilal.h@email.com',
+    jobPostId: 'jp1',
+    jobTitle: 'Amazon PPC Specialist',
+    status: 'completed',
+    scheduledAt: '2026-01-18T11:00:00',
+    interviewerName: 'Munaam',
+    notes: 'Strong candidate, good PPC experience'
+  }
+];
+
+export const mockNewHires: NewHire[] = [
+  {
+    id: 'nh1',
+    name: 'Fatima Zahra',
+    email: 'fatima@amzdudes.com',
+    position: 'Account Executive',
+    department: 'Account Management',
+    startDate: '2026-01-15',
+    status: 'onboarding',
+    manager: 'Munaam'
+  },
+  {
+    id: 'nh2',
+    name: 'Usman Malik',
+    email: 'usman@amzdudes.com',
+    position: 'TikTok Specialist',
+    department: 'Wholesale & TikTok',
+    startDate: '2026-01-08',
+    status: 'probation',
+    manager: 'Aqib'
+  }
+];
+
+export const mockClientFeedback: ClientFeedback[] = [
+  {
+    id: 'cf1',
+    clientId: '1',
+    clientName: 'NaturaCare Supplements',
+    score: 9,
+    feedback: 'Excellent service, very responsive team',
+    submittedAt: '2026-01-15'
+  },
+  {
+    id: 'cf2',
+    clientId: '2',
+    clientName: 'TechGear Pro',
+    score: 8,
+    feedback: 'Great results on PPC campaigns',
+    submittedAt: '2026-01-14'
   }
 ];
 

@@ -11,7 +11,8 @@ import {
   mockActivities, 
   mockOpportunities,
   mockDashboardMetrics,
-  mockTeamLeads
+  mockTeamLeads,
+  mockHiringMetrics
 } from '@/data/mockData';
 import { 
   Users, 
@@ -20,7 +21,8 @@ import {
   Clock, 
   TrendingUp,
   Briefcase,
-  UserPlus
+  UserPlus,
+  BarChart3
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -103,17 +105,16 @@ const Dashboard = () => {
           icon={Briefcase}
         />
         <MetricCard
-          title="Interviews Aligned"
-          value={mockDashboardMetrics.interviewsAligned}
-          change={{ value: `${mockDashboardMetrics.interviewsScheduled} scheduled`, positive: true }}
-          icon={UserPlus}
+          title="Team Utilization"
+          value={`${mockDashboardMetrics.teamUtilization}%`}
+          icon={BarChart3}
+          variant={mockDashboardMetrics.teamUtilization >= 80 ? 'success' : mockDashboardMetrics.teamUtilization >= 60 ? 'warning' : 'danger'}
         />
         <MetricCard
-          title="New Hires"
-          value={mockDashboardMetrics.newHires}
-          change={{ value: `${mockDashboardMetrics.jobPostsActive} job posts active`, positive: true }}
-          icon={Users}
-          variant="success"
+          title="Hiring & Interviews"
+          value={mockHiringMetrics.newHiresThisMonth}
+          change={{ value: `${mockHiringMetrics.interviewsScheduled} scheduled, ${mockHiringMetrics.jobPostsActive} posts`, positive: true }}
+          icon={UserPlus}
         />
       </div>
 

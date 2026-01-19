@@ -86,10 +86,7 @@ export interface DashboardMetrics {
   currentQuarter: string; // e.g., "Q1 2026"
   opportunitiesPipeline: number;
   opportunitiesPotential: number;
-  interviewsAligned: number;
-  jobPostsActive: number;
-  interviewsScheduled: number;
-  newHires: number;
+  teamUtilization: number; // percentage average
 }
 
 export interface TeamLead {
@@ -109,6 +106,61 @@ export interface TeamUtilizationSubmission {
   utilization: number;
   performanceNotes: string;
   submittedAt: string;
+}
+
+// Hiring Types
+export type JobPostStatus = 'active' | 'paused' | 'closed' | 'filled';
+export type InterviewStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+export type HireStatus = 'onboarding' | 'active' | 'probation';
+
+export interface JobPost {
+  id: string;
+  title: string;
+  department: string;
+  status: JobPostStatus;
+  applicants: number;
+  createdAt: string;
+  closingDate?: string;
+}
+
+export interface Interview {
+  id: string;
+  candidateName: string;
+  candidateEmail: string;
+  jobPostId: string;
+  jobTitle: string;
+  status: InterviewStatus;
+  scheduledAt: string;
+  interviewerName: string;
+  notes?: string;
+}
+
+export interface NewHire {
+  id: string;
+  name: string;
+  email: string;
+  position: string;
+  department: string;
+  startDate: string;
+  status: HireStatus;
+  manager: string;
+}
+
+export interface HiringMetrics {
+  jobPostsActive: number;
+  interviewsScheduled: number;
+  interviewsCompleted: number;
+  newHiresThisMonth: number;
+}
+
+export interface ClientFeedback {
+  id: string;
+  clientId: string;
+  clientName: string;
+  score: number; // 1-10
+  feedback?: string;
+  submittedAt: string;
+  invoiceId?: string;
 }
 
 // Notification System Types
