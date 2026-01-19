@@ -76,19 +76,98 @@ export interface TeamMember {
 
 export interface DashboardMetrics {
   totalClients: number;
+  clientsAddedThisMonth: number;
+  clientsLostThisMonth: number;
   totalMRR: number;
-  avgHealthScore: number;
-  activeAlerts: number;
-  resolvedAlerts7Days: number;
-  revenueGenerated30Days: number;
+  mrrChange: number;
+  avgClientScore: number;
+  attendanceScore: number;
+  quarterlyRevenue: number;
+  currentQuarter: string;
   opportunitiesPipeline: number;
+  opportunitiesPotential: number;
   teamUtilization: number;
 }
 
+export interface TeamLead {
+  id: string;
+  name: string;
+  department: string;
+  email: string;
+  teamSize: number;
+  utilization: number;
+  lastUpdated: string;
+}
+
+export interface TeamUtilizationSubmission {
+  teamLeadId: string;
+  teamLeadName: string;
+  department: string;
+  utilization: number;
+  performanceNotes?: string;
+  submittedAt: string;
+}
+
+// Hiring Types
+export type JobPostStatus = 'active' | 'paused' | 'closed' | 'draft';
+export type InterviewStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+export type HireStatus = 'onboarding' | 'probation' | 'active' | 'terminated';
+
+export interface JobPost {
+  id: string;
+  title: string;
+  department: string;
+  status: JobPostStatus;
+  applicants: number;
+  createdAt: string;
+  closingDate?: string;
+}
+
+export interface Interview {
+  id: string;
+  candidateName: string;
+  candidateEmail: string;
+  jobPostId: string;
+  jobTitle: string;
+  status: InterviewStatus;
+  scheduledAt: string;
+  interviewerName: string;
+  notes?: string;
+}
+
+export interface NewHire {
+  id: string;
+  name: string;
+  email: string;
+  position: string;
+  department: string;
+  startDate: string;
+  status: HireStatus;
+  manager: string;
+}
+
+export interface HiringMetrics {
+  jobPostsActive: number;
+  interviewsScheduled: number;
+  interviewsCompleted: number;
+  newHiresThisMonth: number;
+}
+
+export interface ClientFeedback {
+  id: string;
+  clientId: string;
+  clientName: string;
+  score: number;
+  feedback?: string;
+  submittedAt: string;
+}
+
 // Notification System Types
+export type NotificationType = 'alert' | 'update' | 'system' | 'success' | 'feedback_alert' | 'utilization_alert';
+
 export interface Notification {
   id: string;
-  type: 'alert' | 'update' | 'system' | 'success';
+  type: NotificationType;
   title: string;
   message: string;
   timestamp: string;
@@ -104,6 +183,8 @@ export interface NotificationSettings {
   soundEnabled: boolean;
   desktopEnabled: boolean;
   criticalOnly: boolean;
+  feedbackThreshold: number;
+  utilizationThreshold: number;
 }
 
 // Report System Types
@@ -169,4 +250,16 @@ export interface PerformanceDataPoint {
 export interface ClientPerformance {
   clientId: string;
   data: PerformanceDataPoint[];
+}
+
+// Client Portal Types
+export interface ClientPortalMessage {
+  id: string;
+  clientId: string;
+  senderId: string;
+  senderName: string;
+  senderType: 'client' | 'manager';
+  message: string;
+  timestamp: string;
+  read: boolean;
 }
