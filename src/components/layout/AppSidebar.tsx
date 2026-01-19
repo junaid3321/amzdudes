@@ -6,6 +6,7 @@ import {
   TrendingUp, 
   FileText, 
   UserPlus,
+  Briefcase,
   Settings,
   LogOut,
   Zap
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Opportunities', href: '/opportunities', icon: TrendingUp },
   { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Referrals', href: '/referrals', icon: UserPlus },
+  { name: 'Hiring', href: '/hiring', icon: Briefcase },
 ];
 
 const bottomNavigation = [

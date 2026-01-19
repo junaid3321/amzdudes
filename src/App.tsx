@@ -13,6 +13,8 @@ import Reports from "./pages/Reports";
 import Referrals from "./pages/Referrals";
 import Settings from "./pages/Settings";
 import TeamUtilizationForm from "./pages/TeamUtilizationForm";
+import ClientFeedback from "./pages/ClientFeedback";
+import Hiring from "./pages/Hiring";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
           <Route path="/referrals" element={<Referrals />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/team-form" element={<TeamUtilizationForm />} />
+          <Route path="/client-feedback" element={<ClientFeedback />} />
+          <Route path="/hiring" element={<Hiring />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
