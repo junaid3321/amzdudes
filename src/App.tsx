@@ -20,6 +20,7 @@ import ClientPortal from "./pages/ClientPortal";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import EmployeePortal from "./pages/EmployeePortal";
 import SmartClientPortal from "./pages/SmartClientPortal";
+import WholesalerEmployeePortal from "./pages/WholesalerEmployeePortal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/client-onboarding" element={<ClientOnboarding />} />
           <Route path="/employee-portal" element={<EmployeePortal />} />
           <Route path="/smart-portal" element={<SmartClientPortal />} />
+          <Route path="/wholesaler-portal" element={<WholesalerEmployeePortal />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

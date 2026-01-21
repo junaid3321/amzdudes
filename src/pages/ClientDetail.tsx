@@ -1,4 +1,4 @@
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, Link } from 'react-router-dom';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { ClientHeader } from '@/components/client/ClientHeader';
@@ -8,6 +8,8 @@ import { ClientActivityTimeline } from '@/components/client/ClientActivityTimeli
 import { ClientAlertsList } from '@/components/client/ClientAlertsList';
 import { OpportunityCards } from '@/components/dashboard/OpportunityCards';
 import { mockClients, mockAlerts, mockActivities, mockOpportunities } from '@/data/mockData';
+import { Button } from '@/components/ui/button';
+import { Users, ExternalLink } from 'lucide-react';
 
 const ClientDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +32,23 @@ const ClientDetail = () => {
           <ClientHeader client={client} />
           
           <div className="p-6 space-y-6">
+            {/* Quick Portal Access */}
+            <div className="flex gap-3">
+              <Link to={`/wholesaler-portal?clientId=${id}`}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Users className="w-4 h-4" />
+                  Employee Portal
+                  <ExternalLink className="w-3 h-3" />
+                </Button>
+              </Link>
+              <Link to={`/smart-portal?clientId=${id}`}>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  Client Portal
+                </Button>
+              </Link>
+            </div>
+
             {/* Metrics Grid */}
             <ClientMetricsGrid client={client} />
             
