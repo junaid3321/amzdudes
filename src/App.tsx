@@ -17,6 +17,7 @@ import ClientFeedback from "./pages/ClientFeedback";
 import Hiring from "./pages/Hiring";
 import FeedbackAnalytics from "./pages/FeedbackAnalytics";
 import ClientPortal from "./pages/ClientPortal";
+import ClientOnboarding from "./pages/ClientOnboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/hiring" element={<Hiring />} />
           <Route path="/feedback-analytics" element={<FeedbackAnalytics />} />
           <Route path="/client-portal" element={<ClientPortal />} />
+          <Route path="/client-onboarding" element={<ClientOnboarding />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

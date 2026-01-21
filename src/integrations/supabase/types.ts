@@ -14,7 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      client_onboarding: {
+        Row: {
+          client_id: string
+          client_name: string
+          company_name: string
+          created_at: string
+          email: string
+          id: string
+          notification_frequency: string | null
+          onboarding_completed: boolean
+          onboarding_step: number
+          portal_access_enabled: boolean
+          preferred_contact_method: string | null
+          receive_alerts: boolean
+          receive_opportunities: boolean
+          receive_reports: boolean
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          client_name: string
+          company_name: string
+          created_at?: string
+          email: string
+          id?: string
+          notification_frequency?: string | null
+          onboarding_completed?: boolean
+          onboarding_step?: number
+          portal_access_enabled?: boolean
+          preferred_contact_method?: string | null
+          receive_alerts?: boolean
+          receive_opportunities?: boolean
+          receive_reports?: boolean
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          client_name?: string
+          company_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          notification_frequency?: string | null
+          onboarding_completed?: boolean
+          onboarding_step?: number
+          portal_access_enabled?: boolean
+          preferred_contact_method?: string | null
+          receive_alerts?: boolean
+          receive_opportunities?: boolean
+          receive_reports?: boolean
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      dashboard_metrics: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          last_updated_by: string | null
+          metric_key: string
+          metric_value: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_updated_by?: string | null
+          metric_key: string
+          metric_value: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_updated_by?: string | null
+          metric_key?: string
+          metric_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_notification_log: {
+        Row: {
+          actual_value: number | null
+          error_message: string | null
+          id: string
+          notification_type: string
+          recipient_email: string
+          sent_at: string
+          status: string
+          subject: string
+          threshold_type: string | null
+          threshold_value: number | null
+        }
+        Insert: {
+          actual_value?: number | null
+          error_message?: string | null
+          id?: string
+          notification_type: string
+          recipient_email: string
+          sent_at?: string
+          status?: string
+          subject: string
+          threshold_type?: string | null
+          threshold_value?: number | null
+        }
+        Update: {
+          actual_value?: number | null
+          error_message?: string | null
+          id?: string
+          notification_type?: string
+          recipient_email?: string
+          sent_at?: string
+          status?: string
+          subject?: string
+          threshold_type?: string | null
+          threshold_value?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
