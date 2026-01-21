@@ -8,7 +8,8 @@ import {
   UserPlus,
   Settings,
   LogOut,
-  Zap
+  Zap,
+  LayoutGrid
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -16,6 +17,7 @@ import { cn } from '@/lib/utils';
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Clients', href: '/clients', icon: Users },
+  { name: 'Portals', href: '/portals', icon: LayoutGrid },
   { name: 'Alerts', href: '/alerts', icon: Bell },
   { name: 'Activity', href: '/activity', icon: Activity },
   { name: 'Opportunities', href: '/opportunities', icon: TrendingUp },

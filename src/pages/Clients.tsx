@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { ClientList } from '@/components/dashboard/ClientList';
-import { mockClients } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   Select,
   SelectContent,
@@ -11,79 +12,96 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Download, X, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { AddClientModal } from '@/components/clients/AddClientModal';
-import type { Client } from '@/types';
+import { 
+  Search, 
+  Download, 
+  X, 
+  ArrowUpDown, 
+  ChevronLeft, 
+  ChevronRight,
+  Package,
+  Building2,
+  ShoppingCart,
+  Users,
+  ExternalLink,
+  Loader2,
+  Plus
+} from 'lucide-react';
+import { useClients, DBClient } from '@/hooks/useClients';
 
-type SortField = 'name' | 'healthScore' | 'revenue30Days' | 'mrr';
+type SortField = 'name' | 'healthScore' | 'mrr';
 type SortDirection = 'asc' | 'desc';
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50];
 
+const clientTypeConfig = {
+  brand_owner: {
+    label: 'Brand Owner',
+    icon: Building2,
+    color: 'bg-primary/10 text-primary'
+  },
+  wholesaler: {
+    label: 'Wholesaler',
+    icon: Package,
+    color: 'bg-success/10 text-success'
+  },
+  '3p_seller': {
+    label: '3P Seller',
+    icon: ShoppingCart,
+    color: 'bg-warning/10 text-warning'
+  }
+};
+
 const Clients = () => {
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  const { clients, loading } = useClients();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [healthFilter, setHealthFilter] = useState('all');
-  const [managerFilter, setManagerFilter] = useState('all');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const handleClientAdded = (newClient: Client) => {
-    setClients((prev) => [newClient, ...prev]);
-  };
-
   const filteredAndSortedClients = useMemo(() => {
-    // First filter
     const filtered = clients.filter((client) => {
       const matchesSearch = searchQuery === '' || 
-        client.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = typeFilter === 'all' || client.type === typeFilter;
-      const matchesHealth = healthFilter === 'all' || client.healthStatus === healthFilter;
-      const matchesManager = managerFilter === 'all' || 
-        client.assignedManager.toLowerCase().includes(managerFilter.toLowerCase());
+        client.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        client.contact_name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = typeFilter === 'all' || client.client_type === typeFilter;
+      const matchesHealth = healthFilter === 'all' || client.health_status === healthFilter;
 
-      return matchesSearch && matchesType && matchesHealth && matchesManager;
+      return matchesSearch && matchesType && matchesHealth;
     });
 
-    // Then sort
     const sorted = [...filtered].sort((a, b) => {
       let comparison = 0;
       switch (sortField) {
         case 'name':
-          comparison = a.companyName.localeCompare(b.companyName);
+          comparison = a.company_name.localeCompare(b.company_name);
           break;
         case 'healthScore':
-          comparison = a.healthScore - b.healthScore;
-          break;
-        case 'revenue30Days':
-          comparison = a.revenue30Days - b.revenue30Days;
+          comparison = a.health_score - b.health_score;
           break;
         case 'mrr':
-          comparison = a.mrr - b.mrr;
+          comparison = Number(a.mrr) - Number(b.mrr);
           break;
       }
       return sortDirection === 'asc' ? comparison : -comparison;
     });
 
     return sorted;
-  }, [clients, searchQuery, typeFilter, healthFilter, managerFilter, sortField, sortDirection]);
+  }, [clients, searchQuery, typeFilter, healthFilter, sortField, sortDirection]);
 
-  // Pagination
   const totalPages = Math.ceil(filteredAndSortedClients.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedClients = filteredAndSortedClients.slice(startIndex, startIndex + itemsPerPage);
 
-  const hasActiveFilters = searchQuery !== '' || typeFilter !== 'all' || healthFilter !== 'all' || managerFilter !== 'all';
+  const hasActiveFilters = searchQuery !== '' || typeFilter !== 'all' || healthFilter !== 'all';
 
   const clearFilters = () => {
     setSearchQuery('');
     setTypeFilter('all');
     setHealthFilter('all');
-    setManagerFilter('all');
     setCurrentPage(1);
   };
 
@@ -99,16 +117,39 @@ const Clients = () => {
     setCurrentPage(1);
   };
 
-  // Reset to page 1 when filters change
   const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
     setter(value);
     setCurrentPage(1);
   };
 
+  const getHealthBadge = (status: string, score: number) => {
+    const colors = {
+      excellent: 'bg-success/10 text-success border-success/30',
+      good: 'bg-primary/10 text-primary border-primary/30',
+      warning: 'bg-warning/10 text-warning border-warning/30',
+      critical: 'bg-destructive/10 text-destructive border-destructive/30'
+    };
+    return (
+      <Badge variant="outline" className={colors[status as keyof typeof colors] || colors.good}>
+        {score}%
+      </Badge>
+    );
+  };
+
+  if (loading) {
+    return (
+      <AppLayout title="Clients" subtitle="Loading clients...">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout 
       title="Clients" 
-      subtitle="Manage and monitor all your agency clients"
+      subtitle={`Manage and monitor all ${clients.length} agency clients`}
     >
       {/* Filters Bar */}
       <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -131,10 +172,8 @@ const Clients = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="brand_owner">Brand Owners</SelectItem>
-            <SelectItem value="reseller">Resellers</SelectItem>
             <SelectItem value="wholesaler">Wholesalers</SelectItem>
-            <SelectItem value="product_launcher">Product Launchers</SelectItem>
+            <SelectItem value="brand_owner">Brand Owners</SelectItem>
             <SelectItem value="3p_seller">3P Sellers</SelectItem>
           </SelectContent>
         </Select>
@@ -152,18 +191,6 @@ const Clients = () => {
           </SelectContent>
         </Select>
 
-        <Select value={managerFilter} onValueChange={handleFilterChange(setManagerFilter)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Assigned To" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Managers</SelectItem>
-            <SelectItem value="alex">Alex Thompson</SelectItem>
-            <SelectItem value="jordan">Jordan Martinez</SelectItem>
-            <SelectItem value="casey">Casey Williams</SelectItem>
-          </SelectContent>
-        </Select>
-
         <Select value={`${sortField}-${sortDirection}`} onValueChange={handleSortChange}>
           <SelectTrigger className="w-[180px]">
             <ArrowUpDown className="w-4 h-4 mr-2" />
@@ -174,8 +201,6 @@ const Clients = () => {
             <SelectItem value="name-desc">Name (Z-A)</SelectItem>
             <SelectItem value="healthScore-desc">Health (High-Low)</SelectItem>
             <SelectItem value="healthScore-asc">Health (Low-High)</SelectItem>
-            <SelectItem value="revenue30Days-desc">Revenue (High-Low)</SelectItem>
-            <SelectItem value="revenue30Days-asc">Revenue (Low-High)</SelectItem>
             <SelectItem value="mrr-desc">MRR (High-Low)</SelectItem>
             <SelectItem value="mrr-asc">MRR (Low-High)</SelectItem>
           </SelectContent>
@@ -192,20 +217,65 @@ const Clients = () => {
             <Download className="w-4 h-4" />
             Export
           </Button>
-          <AddClientModal onClientAdded={handleClientAdded} />
         </div>
       </div>
 
-      {/* Client List */}
-      <ClientList 
-        clients={paginatedClients} 
-        title={`${filteredAndSortedClients.length} Client${filteredAndSortedClients.length !== 1 ? 's' : ''}${hasActiveFilters ? ' (filtered)' : ''}`}
-        showViewAll={false}
-      />
+      {/* Client Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+        {paginatedClients.map((client) => {
+          const config = clientTypeConfig[client.client_type as keyof typeof clientTypeConfig] || clientTypeConfig.wholesaler;
+          const TypeIcon = config.icon;
+          
+          return (
+            <Card key={client.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="pt-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg ${config.color} flex items-center justify-center`}>
+                      <TypeIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <Link 
+                        to={`/clients/${client.id}`}
+                        className="font-semibold text-foreground hover:text-primary transition-colors"
+                      >
+                        {client.company_name}
+                      </Link>
+                      <p className="text-sm text-muted-foreground">{client.contact_name}</p>
+                    </div>
+                  </div>
+                  {getHealthBadge(client.health_status, client.health_score)}
+                </div>
+                
+                <div className="flex items-center gap-3 text-sm text-muted-foreground mb-4">
+                  <Badge variant="secondary" className="text-xs">{config.label}</Badge>
+                  <span>•</span>
+                  <span className="font-medium text-foreground">${Number(client.mrr).toLocaleString()}/mo</span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <Link to={`/wholesaler-portal?clientId=${client.id}`}>
+                    <Button variant="outline" size="sm" className="w-full gap-1 text-xs">
+                      <Users className="w-3 h-3" />
+                      Employee
+                    </Button>
+                  </Link>
+                  <Link to={`/smart-portal?clientId=${client.id}`}>
+                    <Button variant="default" size="sm" className="w-full gap-1 text-xs">
+                      <ExternalLink className="w-3 h-3" />
+                      Client
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
       {/* Pagination */}
       {filteredAndSortedClients.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-4 mt-4 px-2">
+        <div className="flex flex-wrap items-center justify-between gap-4 px-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>Show</span>
             <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>

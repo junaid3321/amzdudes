@@ -21,6 +21,7 @@ import ClientOnboarding from "./pages/ClientOnboarding";
 import EmployeePortal from "./pages/EmployeePortal";
 import SmartClientPortal from "./pages/SmartClientPortal";
 import WholesalerEmployeePortal from "./pages/WholesalerEmployeePortal";
+import Portals from "./pages/Portals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/" element={<Dashboard />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/clients/:id" element={<ClientDetail />} />
+          <Route path="/portals" element={<Portals />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/activity" element={<Activity />} />
           <Route path="/opportunities" element={<Opportunities />} />
