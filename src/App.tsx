@@ -22,6 +22,8 @@ import EmployeePortal from "./pages/EmployeePortal";
 import SmartClientPortal from "./pages/SmartClientPortal";
 import WholesalerEmployeePortal from "./pages/WholesalerEmployeePortal";
 import Portals from "./pages/Portals";
+import EmployeeAuth from "./pages/EmployeeAuth";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,8 @@ const App = () => (
           <Route path="/employee-portal" element={<EmployeePortal />} />
           <Route path="/smart-portal" element={<SmartClientPortal />} />
           <Route path="/wholesaler-portal" element={<WholesalerEmployeePortal />} />
+          <Route path="/employee-auth" element={<EmployeeAuth />} />
+          <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
