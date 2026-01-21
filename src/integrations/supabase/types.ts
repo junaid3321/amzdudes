@@ -273,6 +273,7 @@ export type Database = {
           amazon_seller_id: string | null
           assigned_employee_id: string | null
           assigned_team_lead_id: string | null
+          auth_user_id: string | null
           client_type: string
           company_name: string
           contact_name: string
@@ -291,6 +292,7 @@ export type Database = {
           amazon_seller_id?: string | null
           assigned_employee_id?: string | null
           assigned_team_lead_id?: string | null
+          auth_user_id?: string | null
           client_type: string
           company_name: string
           contact_name: string
@@ -309,6 +311,7 @@ export type Database = {
           amazon_seller_id?: string | null
           assigned_employee_id?: string | null
           assigned_team_lead_id?: string | null
+          auth_user_id?: string | null
           client_type?: string
           company_name?: string
           contact_name?: string
@@ -600,7 +603,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "founder" | "team_lead" | "employee"
+      app_role: "admin" | "founder" | "team_lead" | "employee" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -728,7 +731,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "founder", "team_lead", "employee"],
+      app_role: ["admin", "founder", "team_lead", "employee", "client"],
     },
   },
 } as const

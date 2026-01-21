@@ -24,6 +24,7 @@ import WholesalerEmployeePortal from "./pages/WholesalerEmployeePortal";
 import Portals from "./pages/Portals";
 import EmployeeAuth from "./pages/EmployeeAuth";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
+import ClientAuth from "./pages/ClientAuth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const App = () => (
           <Route path="/wholesaler-portal" element={<WholesalerEmployeePortal />} />
           <Route path="/employee-auth" element={<EmployeeAuth />} />
           <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+          <Route path="/client-auth" element={<ClientAuth />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
