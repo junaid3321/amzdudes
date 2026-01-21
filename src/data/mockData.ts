@@ -358,7 +358,7 @@ export const mockTeamLeads: TeamLead[] = [
   {
     id: 'tl4',
     name: 'Aqib',
-    department: 'Wholesale & TikTok',
+    department: 'Walmart & TikTok',
     email: 'aqib@amzdudes.com',
     teamSize: 4,
     utilization: 70,
