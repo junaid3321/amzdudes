@@ -6,13 +6,15 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DashboardMetricsSettings } from '@/components/settings/DashboardMetricsSettings';
+import { AccountManagement } from '@/components/settings/AccountManagement';
 import { 
   User, 
   Building, 
   Bell, 
   Link, 
-  Shield, 
-  Palette
+  BarChart3,
+  KeyRound
 } from 'lucide-react';
 
 const Settings = () => {
@@ -21,8 +23,16 @@ const Settings = () => {
       title="Settings" 
       subtitle="Manage your account and preferences"
     >
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList>
+      <Tabs defaultValue="accounts" className="space-y-6">
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="accounts" className="gap-2">
+            <KeyRound className="w-4 h-4" />
+            Accounts
+          </TabsTrigger>
+          <TabsTrigger value="metrics" className="gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Dashboard Metrics
+          </TabsTrigger>
           <TabsTrigger value="profile" className="gap-2">
             <User className="w-4 h-4" />
             Profile
@@ -40,6 +50,14 @@ const Settings = () => {
             Integrations
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="accounts">
+          <AccountManagement />
+        </TabsContent>
+
+        <TabsContent value="metrics">
+          <DashboardMetricsSettings />
+        </TabsContent>
 
         <TabsContent value="profile">
           <Card>
@@ -88,11 +106,11 @@ const Settings = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="agencyName">Agency Name</Label>
-                  <Input id="agencyName" defaultValue="Growth Marketing Agency" />
+                  <Input id="agencyName" defaultValue="AMZ Dudes" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="website">Website</Label>
-                  <Input id="website" defaultValue="https://agency.com" />
+                  <Input id="website" defaultValue="https://amzdudes.com" />
                 </div>
               </div>
               <Button>Save Changes</Button>
@@ -149,10 +167,24 @@ const Settings = () => {
               <CardDescription>Connect your tools and data sources</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {['Amazon SP-API', 'Amazon Advertising API', 'Helium 10', 'Slack', 'Google Sheets'].map((integration) => (
-                <div key={integration} className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                  <span className="font-medium">{integration}</span>
-                  <Button variant="outline" size="sm">Connect</Button>
+              {[
+                { name: 'Amazon SP-API', status: 'Not Connected', description: 'Pull real-time revenue, orders, and inventory data' },
+                { name: 'Amazon Advertising API', status: 'Not Connected', description: 'Sync PPC campaigns and ad spend data' },
+                { name: 'Resend Email', status: 'Connected ✓', description: 'Send threshold breach notifications' },
+                { name: 'Slack', status: 'Not Connected', description: 'Send alerts to Slack channels' },
+                { name: 'Helium 10', status: 'Not Connected', description: 'Keyword research and competitor analysis' }
+              ].map((integration) => (
+                <div key={integration.name} className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                  <div>
+                    <span className="font-medium">{integration.name}</span>
+                    <p className="text-sm text-muted-foreground">{integration.description}</p>
+                    <span className={`text-xs ${integration.status.includes('✓') ? 'text-success' : 'text-muted-foreground'}`}>
+                      {integration.status}
+                    </span>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    {integration.status.includes('✓') ? 'Configure' : 'Connect'}
+                  </Button>
                 </div>
               ))}
             </CardContent>

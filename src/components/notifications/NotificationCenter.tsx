@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Trash2, Settings, X, Volume2, VolumeX, Monitor } from 'lucide-react';
+import { Bell, Check, CheckCheck, Trash2, Settings, X, Volume2, VolumeX, Monitor, Star, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Popover,
@@ -13,13 +15,15 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useNotifications } from '@/hooks/useNotifications';
-import type { Notification } from '@/types';
+import type { Notification, NotificationType, NotificationSettings } from '@/types';
 
-const typeConfig: Record<Notification['type'], { color: string; bg: string }> = {
+const typeConfig: Record<NotificationType, { color: string; bg: string }> = {
   alert: { color: 'text-destructive', bg: 'bg-destructive/10' },
   update: { color: 'text-info', bg: 'bg-info/10' },
   success: { color: 'text-success', bg: 'bg-success/10' },
-  system: { color: 'text-muted-foreground', bg: 'bg-muted' }
+  system: { color: 'text-muted-foreground', bg: 'bg-muted' },
+  feedback_alert: { color: 'text-warning', bg: 'bg-warning/10' },
+  utilization_alert: { color: 'text-orange-500', bg: 'bg-orange-500/10' }
 };
 
 const priorityConfig: Record<Notification['priority'], string> = {
@@ -49,7 +53,7 @@ export function NotificationCenter() {
   const filteredNotifications = {
     all: notifications,
     unread: notifications.filter(n => !n.read),
-    alerts: notifications.filter(n => n.type === 'alert')
+    alerts: notifications.filter(n => n.type === 'alert' || n.type === 'feedback_alert' || n.type === 'utilization_alert')
   };
 
   return (
@@ -75,7 +79,7 @@ export function NotificationCenter() {
       </PopoverTrigger>
       <PopoverContent className="w-96 p-0" align="end">
         {showSettings ? (
-          <NotificationSettings 
+          <NotificationSettingsPanel 
             settings={settings}
             updateSettings={updateSettings}
             requestDesktopPermission={requestDesktopPermission}
@@ -226,18 +230,14 @@ function NotificationItem({ notification, onMarkRead, onClear }: NotificationIte
   );
 }
 
-interface NotificationSettingsProps {
-  settings: {
-    soundEnabled: boolean;
-    desktopEnabled: boolean;
-    criticalOnly: boolean;
-  };
-  updateSettings: (settings: Partial<NotificationSettingsProps['settings']>) => void;
+interface NotificationSettingsPanelProps {
+  settings: NotificationSettings;
+  updateSettings: (settings: Partial<NotificationSettings>) => void;
   requestDesktopPermission: () => void;
   onBack: () => void;
 }
 
-function NotificationSettings({ settings, updateSettings, requestDesktopPermission, onBack }: NotificationSettingsProps) {
+function NotificationSettingsPanel({ settings, updateSettings, requestDesktopPermission, onBack }: NotificationSettingsPanelProps) {
   const canEnableDesktop = 'Notification' in window;
   const hasDesktopPermission = canEnableDesktop && Notification.permission === 'granted';
 
@@ -301,6 +301,54 @@ function NotificationSettings({ settings, updateSettings, requestDesktopPermissi
             checked={settings.criticalOnly}
             onCheckedChange={(checked) => updateSettings({ criticalOnly: checked })}
           />
+        </div>
+
+        <div className="pt-4 border-t border-border">
+          <h4 className="text-sm font-medium text-foreground mb-3">Alert Thresholds</h4>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <Star className="h-4 w-4 text-warning" />
+                  Feedback Score Threshold
+                </Label>
+                <span className="text-sm font-medium">{settings.feedbackThreshold}/10</span>
+              </div>
+              <Slider
+                value={[settings.feedbackThreshold]}
+                onValueChange={([value]) => updateSettings({ feedbackThreshold: value })}
+                min={1}
+                max={10}
+                step={1}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Alert when feedback drops below this score
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm">
+                  <Users className="h-4 w-4 text-primary" />
+                  Utilization Threshold
+                </Label>
+                <span className="text-sm font-medium">{settings.utilizationThreshold}%</span>
+              </div>
+              <Slider
+                value={[settings.utilizationThreshold]}
+                onValueChange={([value]) => updateSettings({ utilizationThreshold: value })}
+                min={50}
+                max={100}
+                step={5}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Alert when team utilization falls below target
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

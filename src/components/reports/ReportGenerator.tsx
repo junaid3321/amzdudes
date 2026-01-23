@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,9 +21,19 @@ import {
   Loader2
 } from 'lucide-react';
 import { ReportPDFDocument } from './ReportPDFDocument';
-import { mockClients, mockReportTemplates, generatePerformanceData } from '@/data/mockData';
+import { mockReportTemplates, generatePerformanceData } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
 import type { ReportTemplate, ReportType, Client } from '@/types';
 import { toast } from '@/hooks/use-toast';
+
+interface DBClient {
+  id: string;
+  company_name: string;
+  health_score: number;
+  mrr: number;
+  contact_name: string;
+  email: string;
+}
 
 interface ReportGeneratorProps {
   onReportGenerated?: (reportId: string) => void;
@@ -41,6 +51,18 @@ export function ReportGenerator({ onReportGenerated }: ReportGeneratorProps) {
   const [scheduleFrequency, setScheduleFrequency] = useState<ReportType>('weekly');
   const [scheduleDay, setScheduleDay] = useState('1');
   const [scheduleTime, setScheduleTime] = useState('09:00');
+  const [clients, setClients] = useState<DBClient[]>([]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      const { data } = await supabase
+        .from('clients')
+        .select('id, company_name, health_score, mrr, contact_name, email')
+        .order('company_name');
+      setClients((data || []) as DBClient[]);
+    };
+    fetchClients();
+  }, []);
 
   const handleGenerateReport = async () => {
     if (!selectedClient || !selectedTemplate) {
@@ -55,18 +77,37 @@ export function ReportGenerator({ onReportGenerated }: ReportGeneratorProps) {
     setIsGenerating(true);
 
     try {
-      const client = mockClients.find(c => c.id === selectedClient);
-      if (!client) throw new Error('Client not found');
+      const dbClient = clients.find(c => c.id === selectedClient);
+      if (!dbClient) throw new Error('Client not found');
 
       const performanceData = generatePerformanceData(selectedClient);
       const reportId = `report_${Date.now()}`;
 
+      // Convert to the format expected by ReportPDFDocument
+      const client: Client = {
+        id: dbClient.id,
+        name: dbClient.contact_name,
+        companyName: dbClient.company_name,
+        type: 'brand_owner',
+        healthScore: dbClient.health_score,
+        healthStatus: 'good',
+        revenue30Days: 0,
+        adSpend30Days: 0,
+        roas: 0,
+        assignedManager: '',
+        package: 'Standard',
+        mrr: Number(dbClient.mrr),
+        lastContactDate: new Date().toISOString(),
+        alertsActive: 0,
+        activeSince: new Date().toISOString()
+      };
+
       const report = {
         id: reportId,
-        name: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report - ${client.companyName}`,
+        name: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report - ${dbClient.company_name}`,
         type: reportType,
-        clientId: client.id,
-        clientName: client.companyName,
+        clientId: dbClient.id,
+        clientName: dbClient.company_name,
         status: 'draft' as const,
         templateId: selectedTemplate,
         createdAt: new Date().toISOString(),
@@ -164,12 +205,12 @@ export function ReportGenerator({ onReportGenerated }: ReportGeneratorProps) {
                   <SelectValue placeholder="Choose a client..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockClients.map((client) => (
+                  {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
                       <div className="flex items-center gap-2">
-                        <span>{client.companyName}</span>
+                        <span>{client.company_name}</span>
                         <Badge variant="outline" className="text-xs">
-                          {client.healthScore}
+                          {client.health_score}
                         </Badge>
                       </div>
                     </SelectItem>
@@ -272,9 +313,9 @@ export function ReportGenerator({ onReportGenerated }: ReportGeneratorProps) {
                   <SelectValue placeholder="Choose a client..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockClients.map((client) => (
+                  {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
-                      {client.companyName}
+                      {client.company_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
