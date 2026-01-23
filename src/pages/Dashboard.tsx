@@ -1,14 +1,10 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { MetricCard } from '@/components/dashboard/MetricCard';
-import { ClientList } from '@/components/dashboard/ClientList';
-import { AlertList } from '@/components/dashboard/AlertList';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { OpportunityCards } from '@/components/dashboard/OpportunityCards';
 import { TeamUtilizationCard } from '@/components/dashboard/TeamUtilizationCard';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { 
-  mockClients, 
-  mockAlerts, 
   mockActivities, 
   mockOpportunities,
   mockTeamLeads
@@ -36,14 +32,6 @@ const Dashboard = () => {
     }
     return `$${value}`;
   };
-
-  // Sort clients by health score for at-risk display
-  const atRiskClients = [...mockClients]
-    .filter(c => c.healthStatus === 'warning' || c.healthStatus === 'critical')
-    .sort((a, b) => a.healthScore - b.healthScore);
-
-  // Get critical and warning alerts only
-  const urgentAlerts = mockAlerts.filter(a => a.severity === 'critical' || a.severity === 'warning');
 
   // Calculate net client change
   const netClientChange = metrics.clientsAddedThisMonth - metrics.clientsLostThisMonth;
@@ -119,42 +107,16 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Left Column - Clients & Alerts */}
-        <div className="xl:col-span-2 space-y-8">
-          {/* At-Risk Clients */}
-          {atRiskClients.length > 0 && (
-            <ClientList 
-              clients={atRiskClients} 
-              title="⚠️ Clients Needing Attention" 
-            />
-          )}
+      {/* Main Content - Single Column */}
+      <div className="space-y-8">
+        {/* Team Utilization */}
+        <TeamUtilizationCard teamLeads={mockTeamLeads} />
 
-          {/* Urgent Alerts */}
-          <AlertList 
-            alerts={urgentAlerts.slice(0, 5)} 
-            title="Urgent Alerts" 
-          />
+        {/* Activity Feed */}
+        <ActivityFeed activities={mockActivities} />
 
-          {/* All Clients */}
-          <ClientList 
-            clients={mockClients.slice(0, 6)} 
-            title="All Clients" 
-          />
-        </div>
-
-        {/* Right Column - Activity, Team & Opportunities */}
-        <div className="space-y-8">
-          {/* Team Utilization */}
-          <TeamUtilizationCard teamLeads={mockTeamLeads} />
-
-          {/* Activity Feed */}
-          <ActivityFeed activities={mockActivities} />
-
-          {/* Growth Opportunities */}
-          <OpportunityCards opportunities={mockOpportunities} />
-        </div>
+        {/* Growth Opportunities */}
+        <OpportunityCards opportunities={mockOpportunities} />
       </div>
     </AppLayout>
   );
