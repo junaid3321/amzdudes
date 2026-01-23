@@ -14,6 +14,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.VERCEL_REPO_TOKEN }}
 
       - name: Configure Git
         run: |
@@ -22,9 +23,16 @@ jobs:
 
       - name: Add target repository as remote
         run: |
-          git remote add target https://${{ secrets.VERCEL_REPO_TOKEN }}@github.com/amzdudesai02-rgb/amzdudes.git
+          git remote add target https://x-access-token:${{ secrets.VERCEL_REPO_TOKEN }}@github.com/amzdudesai02-rgb/amzdudes.git
+
+      - name: Verify repository access
+        run: |
+          git ls-remote target || echo "Repository not accessible. Please check if repository exists and token has access."
 
       - name: Push to target repository
         run: |
           git push target HEAD:main --force
+        env:
+          GIT_ASKPASS: echo
+          GIT_TERMINAL_PROMPT: 0
 
