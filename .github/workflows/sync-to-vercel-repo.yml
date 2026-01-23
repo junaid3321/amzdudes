@@ -1,0 +1,30 @@
+name: Sync to Vercel Repository
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Add target repository as remote
+        run: |
+          git remote add target https://${{ secrets.VERCEL_REPO_TOKEN }}@github.com/amzdudesai02-rgb/amzdudes.git
+
+      - name: Push to target repository
+        run: |
+          git push target HEAD:main --force
+
