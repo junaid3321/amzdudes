@@ -8,13 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardMetricsSettings } from '@/components/settings/DashboardMetricsSettings';
 import { AccountManagement } from '@/components/settings/AccountManagement';
+import { ChangePasswordForm } from '@/components/settings/ChangePasswordForm';
 import { 
   User, 
   Building, 
   Bell, 
   Link, 
   BarChart3,
-  KeyRound
+  KeyRound,
+  Shield
 } from 'lucide-react';
 
 const Settings = () => {
@@ -28,6 +30,10 @@ const Settings = () => {
           <TabsTrigger value="accounts" className="gap-2">
             <KeyRound className="w-4 h-4" />
             Accounts
+          </TabsTrigger>
+          <TabsTrigger value="security" className="gap-2">
+            <Shield className="w-4 h-4" />
+            Security
           </TabsTrigger>
           <TabsTrigger value="metrics" className="gap-2">
             <BarChart3 className="w-4 h-4" />
@@ -53,6 +59,10 @@ const Settings = () => {
 
         <TabsContent value="accounts">
           <AccountManagement />
+        </TabsContent>
+
+        <TabsContent value="security">
+          <ChangePasswordForm />
         </TabsContent>
 
         <TabsContent value="metrics">

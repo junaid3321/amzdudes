@@ -27,6 +27,7 @@ import EmployeeAuth from "./pages/EmployeeAuth";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import ClientAuth from "./pages/ClientAuth";
 import Login from "./pages/Login";
+import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,14 @@ const App = () => (
           <Route path="/reports" element={<Reports />} />
           <Route path="/referrals" element={<Referrals />} />
           <Route path="/settings" element={<Settings />} />
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/team-form" element={<TeamUtilizationForm />} />
           <Route path="/client-feedback" element={<ClientFeedback />} />
           <Route path="/hiring" element={<Hiring />} />

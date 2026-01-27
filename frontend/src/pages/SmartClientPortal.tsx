@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,8 @@ import {
   ShoppingCart,
   Store,
   Building2,
-  Link2
+  Link2,
+  Lock
 } from 'lucide-react';
 import { useClients, DBClient } from '@/hooks/useClients';
 import { 
@@ -190,6 +191,12 @@ const SmartClientPortal = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" asChild className="gap-2">
+                <Link to="/change-password">
+                  <Lock className="w-4 h-4" />
+                  <span className="hidden sm:inline">Change password</span>
+                </Link>
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
