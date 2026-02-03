@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Zap, AlertCircle, Building2, Users, Eye, EyeOff, Clock } from 'lucide-react';
+import { Loader2, AlertCircle, Building2, Users, Eye, EyeOff, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientAuth } from '@/hooks/useClientAuth';
 import { isClientAllowedFromPath, isEmployeeAllowedFromPath } from '@/components/ProtectedRoute';
@@ -162,8 +162,12 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/50 to-background p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mb-2">
-            <Zap className="w-8 h-8 text-primary-foreground" />
+          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mb-2 overflow-hidden">
+            <img 
+              src="/amz-logo.png" 
+              alt="AMZ Dudes Logo" 
+              className="w-full h-full object-contain p-2"
+            />
           </div>
           <div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
