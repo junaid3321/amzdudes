@@ -102,79 +102,179 @@ async function findAuthUserByEmail(email) {
 
 async function createOrUpdateEmployee(name, email, role, authUserId) {
   console.log(`  Creating/updating employee record: ${name}`);
-  const res = await fetch(`${restUrl}/employees`, {
-    method: 'POST',
-    headers: { ...headersAuth, Prefer: 'resolution=merge-duplicates' },
-    body: JSON.stringify({
-      name,
-      email,
-      role,
-      auth_user_id: authUserId,
-    }),
-  });
-  
-  if (!res.ok) {
-    // Try PATCH if POST fails
-    const patchRes = await fetch(
-      `${restUrl}/employees?email=eq.${encodeURIComponent(email)}`,
-      {
-        method: 'PATCH',
-        headers: { ...headersAuth, Prefer: 'return=representation' },
-        body: JSON.stringify({
-          name,
-          role,
-          auth_user_id: authUserId,
-        }),
+  try {
+    const res = await fetch(`${restUrl}/employees`, {
+      method: 'POST',
+      headers: { ...headersAuth, Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        name,
+        email,
+        role,
+        auth_user_id: authUserId,
+      }),
+    });
+    
+    const responseText = await res.text();
+    console.log(`  POST status: ${res.status} ${res.statusText}`);
+    
+    if (!res.ok) {
+      // Try PATCH if POST fails
+      console.log(`  POST failed, trying PATCH...`);
+      const patchRes = await fetch(
+        `${restUrl}/employees?email=eq.${encodeURIComponent(email)}`,
+        {
+          method: 'PATCH',
+          headers: { ...headersAuth, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            name,
+            role,
+            auth_user_id: authUserId,
+          }),
+        }
+      );
+      const patchText = await patchRes.text();
+      console.log(`  PATCH status: ${patchRes.status} ${patchRes.statusText}`);
+      console.log(`  PATCH response: ${patchText.substring(0, 200)}`);
+      
+      if (!patchRes.ok) {
+        throw new Error(`Failed to create/update employee (${patchRes.status}): ${patchText || patchRes.statusText}`);
       }
-    );
-    if (!patchRes.ok) {
-      const text = await patchRes.text();
-      throw new Error(`Failed to create/update employee: ${text || patchRes.statusText}`);
+      
+      if (!patchText || patchText.trim() === '') {
+        // Empty response - try to fetch the updated record
+        const getRes = await fetch(
+          `${restUrl}/employees?email=eq.${encodeURIComponent(email)}&select=*`,
+          { headers: headersAuth }
+        );
+        const getText = await getRes.text();
+        if (getRes.ok && getText) {
+          return JSON.parse(getText);
+        }
+        throw new Error('PATCH succeeded but could not retrieve updated record');
+      }
+      
+      try {
+        return JSON.parse(patchText);
+      } catch (e) {
+        throw new Error(`Invalid JSON response from PATCH: ${patchText.substring(0, 200)}`);
+      }
     }
-    return await patchRes.json();
+    
+    if (!responseText || responseText.trim() === '') {
+      // Empty response - try to fetch the created record
+      const getRes = await fetch(
+        `${restUrl}/employees?email=eq.${encodeURIComponent(email)}&select=*`,
+        { headers: headersAuth }
+      );
+      const getText = await getRes.text();
+      if (getRes.ok && getText) {
+        return JSON.parse(getText);
+      }
+      throw new Error('POST succeeded but response was empty and could not retrieve created record');
+    }
+    
+    try {
+      return JSON.parse(responseText);
+    } catch (e) {
+      throw new Error(`Invalid JSON response from POST: ${responseText.substring(0, 200)}`);
+    }
+  } catch (e) {
+    if (e.message.includes('fetch failed') || e.message.includes('ERR_NAME_NOT_RESOLVED')) {
+      throw new Error(`Network error: Cannot reach Supabase. Check SUPABASE_URL: ${SUPABASE_URL}`);
+    }
+    throw e;
   }
-  return await res.json();
 }
 
 async function createOrUpdateClient(name, email, companyName, clientType, authUserId) {
   console.log(`  Creating/updating client record: ${companyName}`);
-  const res = await fetch(`${restUrl}/clients`, {
-    method: 'POST',
-    headers: { ...headersAuth, Prefer: 'resolution=merge-duplicates' },
-    body: JSON.stringify({
-      contact_name: name,
-      email,
-      company_name: companyName,
-      client_type: clientType,
-      auth_user_id: authUserId,
-      health_score: 75,
-      health_status: 'good',
-      mrr: 0,
-    }),
-  });
-  
-  if (!res.ok) {
-    // Try PATCH if POST fails
-    const patchRes = await fetch(
-      `${restUrl}/clients?email=eq.${encodeURIComponent(email)}`,
-      {
-        method: 'PATCH',
-        headers: { ...headersAuth, Prefer: 'return=representation' },
-        body: JSON.stringify({
-          contact_name: name,
-          company_name: companyName,
-          client_type: clientType,
-          auth_user_id: authUserId,
-        }),
+  try {
+    const res = await fetch(`${restUrl}/clients`, {
+      method: 'POST',
+      headers: { ...headersAuth, Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        contact_name: name,
+        email,
+        company_name: companyName,
+        client_type: clientType,
+        auth_user_id: authUserId,
+        health_score: 75,
+        health_status: 'good',
+        mrr: 0,
+      }),
+    });
+    
+    const responseText = await res.text();
+    console.log(`  POST status: ${res.status} ${res.statusText}`);
+    
+    if (!res.ok) {
+      // Try PATCH if POST fails
+      console.log(`  POST failed, trying PATCH...`);
+      const patchRes = await fetch(
+        `${restUrl}/clients?email=eq.${encodeURIComponent(email)}`,
+        {
+          method: 'PATCH',
+          headers: { ...headersAuth, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            contact_name: name,
+            company_name: companyName,
+            client_type: clientType,
+            auth_user_id: authUserId,
+          }),
+        }
+      );
+      const patchText = await patchRes.text();
+      console.log(`  PATCH status: ${patchRes.status} ${patchRes.statusText}`);
+      console.log(`  PATCH response: ${patchText.substring(0, 200)}`);
+      
+      if (!patchRes.ok) {
+        throw new Error(`Failed to create/update client (${patchRes.status}): ${patchText || patchRes.statusText}`);
       }
-    );
-    if (!patchRes.ok) {
-      const text = await patchRes.text();
-      throw new Error(`Failed to create/update client: ${text || patchRes.statusText}`);
+      
+      if (!patchText || patchText.trim() === '') {
+        // Empty response - try to fetch the updated record
+        const getRes = await fetch(
+          `${restUrl}/clients?email=eq.${encodeURIComponent(email)}&select=*`,
+          { headers: headersAuth }
+        );
+        const getText = await getRes.text();
+        if (getRes.ok && getText) {
+          return JSON.parse(getText);
+        }
+        throw new Error('PATCH succeeded but could not retrieve updated record');
+      }
+      
+      try {
+        return JSON.parse(patchText);
+      } catch (e) {
+        throw new Error(`Invalid JSON response from PATCH: ${patchText.substring(0, 200)}`);
+      }
     }
-    return await patchRes.json();
+    
+    if (!responseText || responseText.trim() === '') {
+      // Empty response - try to fetch the created record
+      const getRes = await fetch(
+        `${restUrl}/clients?email=eq.${encodeURIComponent(email)}&select=*`,
+        { headers: headersAuth }
+      );
+      const getText = await getRes.text();
+      if (getRes.ok && getText) {
+        return JSON.parse(getText);
+      }
+      throw new Error('POST succeeded but response was empty and could not retrieve created record');
+    }
+    
+    try {
+      return JSON.parse(responseText);
+    } catch (e) {
+      throw new Error(`Invalid JSON response from POST: ${responseText.substring(0, 200)}`);
+    }
+  } catch (e) {
+    if (e.message.includes('fetch failed') || e.message.includes('ERR_NAME_NOT_RESOLVED')) {
+      throw new Error(`Network error: Cannot reach Supabase. Check SUPABASE_URL: ${SUPABASE_URL}`);
+    }
+    throw e;
   }
-  return await res.json();
 }
 
 async function setupUser(user) {
