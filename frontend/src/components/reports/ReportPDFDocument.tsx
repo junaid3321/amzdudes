@@ -101,6 +101,31 @@ interface ReportPDFDocumentProps {
   report: Report;
   client: Client;
   performanceData: PerformanceDataPoint[];
+  aiContent?: {
+    executiveSummary?: string;
+    keyAccomplishments?: string[];
+    performanceMetrics?: {
+      summary?: string;
+      highlights?: string[];
+    };
+    growthOpportunities?: Array<{
+      title?: string;
+      description?: string;
+      potentialImpact?: string;
+      recommendedActions?: string[];
+    }>;
+    challenges?: Array<{
+      challenge?: string;
+      solution?: string;
+      status?: string;
+    }>;
+    nextSteps?: Array<{
+      action?: string;
+      priority?: string;
+      timeline?: string;
+    }>;
+    recommendations?: string[];
+  };
 }
 
 const formatCurrency = (value: number) => {
@@ -120,11 +145,12 @@ const formatDate = (dateString: string) => {
   });
 };
 
-export function ReportPDFDocument({ report, client, performanceData }: ReportPDFDocumentProps) {
+export function ReportPDFDocument({ report, client, performanceData, aiContent }: ReportPDFDocumentProps) {
   const totalRevenue = performanceData.reduce((sum, d) => sum + d.revenue, 0);
   const totalAdSpend = performanceData.reduce((sum, d) => sum + d.adSpend, 0);
   const totalOrders = performanceData.reduce((sum, d) => sum + d.orders, 0);
   const avgRoas = totalAdSpend > 0 ? totalRevenue / totalAdSpend : 0;
+  const isAIGenerated = !!aiContent;
 
   return (
     <Document>
@@ -134,6 +160,7 @@ export function ReportPDFDocument({ report, client, performanceData }: ReportPDF
           <Text style={styles.title}>{report.name}</Text>
           <Text style={styles.subtitle}>
             {client.companyName} • Generated on {formatDate(report.createdAt)}
+            {isAIGenerated && ' • AI-Powered Analysis'}
           </Text>
         </View>
 
@@ -141,11 +168,24 @@ export function ReportPDFDocument({ report, client, performanceData }: ReportPDF
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Executive Summary</Text>
           <Text style={styles.summaryText}>
-            This report provides a comprehensive overview of {client.companyName}'s performance 
-            for the reporting period. The client currently has a health score of {client.healthScore}/100 
-            ({client.healthStatus}) with {client.alertsActive} active alerts requiring attention.
+            {aiContent?.executiveSummary || 
+              `This report provides a comprehensive overview of ${client.companyName}'s performance 
+              for the reporting period. The client currently has a health score of ${client.healthScore}/100 
+              (${client.healthStatus}) with ${client.alertsActive} active alerts requiring attention.`}
           </Text>
         </View>
+
+        {/* AI-Generated Key Accomplishments */}
+        {aiContent?.keyAccomplishments && aiContent.keyAccomplishments.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Key Accomplishments</Text>
+            {aiContent.keyAccomplishments.map((accomplishment, index) => (
+              <View key={index} style={{ marginBottom: 8 }}>
+                <Text style={styles.summaryText}>• {accomplishment}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* Key Metrics */}
         <View style={styles.section}>
@@ -197,6 +237,74 @@ export function ReportPDFDocument({ report, client, performanceData }: ReportPDF
           ))}
         </View>
 
+        {/* AI-Generated Growth Opportunities */}
+        {aiContent?.growthOpportunities && aiContent.growthOpportunities.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Growth Opportunities</Text>
+            {aiContent.growthOpportunities.map((opp, index) => (
+              <View key={index} style={{ marginBottom: 12 }}>
+                <Text style={[styles.sectionTitle, { fontSize: 12, marginBottom: 4 }]}>
+                  {opp.title || `Opportunity ${index + 1}`}
+                </Text>
+                <Text style={styles.summaryText}>{opp.description}</Text>
+                {opp.recommendedActions && opp.recommendedActions.length > 0 && (
+                  <View style={{ marginTop: 6 }}>
+                    {opp.recommendedActions.map((action, i) => (
+                      <Text key={i} style={[styles.summaryText, { fontSize: 10 }]}>
+                        - {action}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* AI-Generated Challenges & Solutions */}
+        {aiContent?.challenges && aiContent.challenges.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Challenges & Solutions</Text>
+            {aiContent.challenges.map((challenge, index) => (
+              <View key={index} style={{ marginBottom: 10 }}>
+                <Text style={[styles.summaryText, { fontWeight: 'bold' }]}>
+                  Challenge: {challenge.challenge}
+                </Text>
+                <Text style={styles.summaryText}>Solution: {challenge.solution}</Text>
+                <Text style={[styles.summaryText, { fontSize: 10, color: '#6b7280' }]}>
+                  Status: {challenge.status}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* AI-Generated Next Steps */}
+        {aiContent?.nextSteps && aiContent.nextSteps.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Next Steps</Text>
+            {aiContent.nextSteps.map((step, index) => (
+              <View key={index} style={{ marginBottom: 8 }}>
+                <Text style={styles.summaryText}>
+                  • {step.action} (Priority: {step.priority}, Timeline: {step.timeline})
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* AI-Generated Recommendations */}
+        {aiContent?.recommendations && aiContent.recommendations.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Strategic Recommendations</Text>
+            {aiContent.recommendations.map((rec, index) => (
+              <View key={index} style={{ marginBottom: 6 }}>
+                <Text style={styles.summaryText}>• {rec}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Client Details */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Client Information</Text>
@@ -213,6 +321,7 @@ export function ReportPDFDocument({ report, client, performanceData }: ReportPDF
         {/* Footer */}
         <Text style={styles.footer}>
           ClientMax Pro • Confidential Report • Page 1 of 1
+          {isAIGenerated && ' • Generated with AI'}
         </Text>
       </Page>
     </Document>

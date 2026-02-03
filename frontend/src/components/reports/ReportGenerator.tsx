@@ -18,7 +18,8 @@ import {
   Plus,
   Settings,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 import { ReportPDFDocument } from './ReportPDFDocument';
 import { mockReportTemplates, generatePerformanceData } from '@/data/mockData';
@@ -33,6 +34,7 @@ interface DBClient {
   mrr: number;
   contact_name: string;
   email: string;
+  client_type?: string;
 }
 
 interface ReportGeneratorProps {
@@ -52,19 +54,210 @@ export function ReportGenerator({ onReportGenerated }: ReportGeneratorProps) {
   const [scheduleDay, setScheduleDay] = useState('1');
   const [scheduleTime, setScheduleTime] = useState('09:00');
   const [clients, setClients] = useState<DBClient[]>([]);
+  const [useAI, setUseAI] = useState(false);
+  const [aiGenerating, setAiGenerating] = useState(false);
 
   useEffect(() => {
     const fetchClients = async () => {
       const { data } = await supabase
         .from('clients')
-        .select('id, company_name, health_score, mrr, contact_name, email')
+        .select('id, company_name, health_score, mrr, contact_name, email, client_type')
         .order('company_name');
       setClients((data || []) as DBClient[]);
     };
     fetchClients();
   }, []);
 
+  const fetchClientDataForAI = async (clientId: string) => {
+    // Fetch all relevant client data
+    const [clientRes, updatesRes, tasksRes] = await Promise.all([
+      supabase
+        .from('clients')
+        .select('*')
+        .eq('id', clientId)
+        .single(),
+      supabase
+        .from('daily_updates')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false })
+        .limit(50),
+      supabase
+        .from('client_tasks')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false })
+    ]);
+
+    const client = clientRes.data;
+    const updates = updatesRes.data || [];
+    const tasks = tasksRes.data || [];
+
+    // Calculate date range based on report type
+    const now = new Date();
+    let startDate = new Date();
+    let period = '';
+
+    switch (reportType) {
+      case 'weekly':
+        startDate.setDate(now.getDate() - 7);
+        period = 'Weekly';
+        break;
+      case 'monthly':
+        startDate.setMonth(now.getMonth() - 1);
+        period = 'Monthly';
+        break;
+      case 'quarterly':
+        startDate.setMonth(now.getMonth() - 3);
+        period = 'Quarterly';
+        break;
+      default:
+        startDate.setDate(now.getDate() - 30);
+        period = 'Custom';
+    }
+
+    // Filter data by date range
+    const filteredUpdates = updates.filter(u => new Date(u.created_at) >= startDate);
+    const filteredTasks = tasks.filter(t => new Date(t.created_at) >= startDate);
+
+    return {
+      clientInfo: client,
+      dailyUpdates: filteredUpdates,
+      tasks: filteredTasks,
+      metrics: {
+        healthScore: client?.health_score || 0,
+        mrr: client?.mrr || 0,
+        updatesCount: filteredUpdates.length,
+        tasksCount: filteredTasks.length,
+        completedTasks: filteredTasks.filter(t => t.status === 'completed').length,
+      },
+      period: `${period} Report (${startDate.toLocaleDateString()} - ${now.toLocaleDateString()})`
+    };
+  };
+
+  const handleAIGenerateReport = async () => {
+    if (!selectedClient) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please select a client.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setAiGenerating(true);
+    setIsGenerating(true);
+
+    try {
+      const dbClient = clients.find(c => c.id === selectedClient);
+      if (!dbClient) throw new Error('Client not found');
+
+      // Fetch all client data
+      toast({
+        title: 'Gathering Data',
+        description: 'Collecting client records and metrics...',
+      });
+
+      const reportData = await fetchClientDataForAI(selectedClient);
+
+      // Call AI assistant
+      toast({
+        title: 'AI Analysis',
+        description: 'AI is analyzing records and generating report...',
+      });
+
+      const { data: aiResponse, error: aiError } = await supabase.functions.invoke('ai-assistant', {
+        body: {
+          type: 'generate_report',
+          content: '',
+          clientType: dbClient.client_type || 'general',
+          reportData: reportData,
+        }
+      });
+
+      if (aiError) throw aiError;
+      if (!aiResponse) throw new Error('No response from AI');
+
+      // Generate report from AI response
+      const reportId = `ai_report_${Date.now()}`;
+      const client: Client = {
+        id: dbClient.id,
+        name: dbClient.contact_name,
+        companyName: dbClient.company_name,
+        type: dbClient.client_type as any || 'brand_owner',
+        healthScore: dbClient.health_score,
+        healthStatus: dbClient.health_score >= 80 ? 'excellent' : dbClient.health_score >= 60 ? 'good' : 'warning',
+        revenue30Days: 0,
+        adSpend30Days: 0,
+        roas: 0,
+        assignedManager: '',
+        package: 'Standard',
+        mrr: Number(dbClient.mrr),
+        lastContactDate: new Date().toISOString(),
+        alertsActive: 0,
+        activeSince: new Date().toISOString()
+      };
+
+      const report = {
+        id: reportId,
+        name: `AI ${reportData.period} - ${dbClient.company_name}`,
+        type: reportType,
+        clientId: dbClient.id,
+        clientName: dbClient.company_name,
+        status: 'draft' as const,
+        templateId: 'ai-generated',
+        createdAt: new Date().toISOString(),
+        emailRecipients: emailRecipients.split(',').map(e => e.trim()).filter(Boolean),
+        aiContent: aiResponse, // Store AI-generated content
+      };
+
+      // Generate PDF with AI content
+      const blob = await pdf(
+        <ReportPDFDocument 
+          report={report} 
+          client={client} 
+          performanceData={reportData.metrics}
+          aiContent={aiResponse}
+        />
+      ).toBlob();
+
+      // Download the PDF
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${report.name.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'AI Report Generated Successfully',
+        description: 'Report has been generated based on client records and downloaded.',
+      });
+
+      onReportGenerated?.(reportId);
+      setIsOpen(false);
+      resetForm();
+    } catch (error: any) {
+      console.error('Error generating AI report:', error);
+      toast({
+        title: 'AI Generation Failed',
+        description: error.message || 'There was an error generating the AI report. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setAiGenerating(false);
+      setIsGenerating(false);
+    }
+  };
+
   const handleGenerateReport = async () => {
+    // If AI generation is enabled, use AI path
+    if (useAI) {
+      return handleAIGenerateReport();
+    }
+
     if (!selectedClient || !selectedTemplate) {
       toast({
         title: 'Missing Information',
@@ -169,6 +362,7 @@ export function ReportGenerator({ onReportGenerated }: ReportGeneratorProps) {
     setEmailRecipients('');
     setSendEmail(false);
     setScheduleReport(false);
+    setUseAI(false);
   };
 
   return (
@@ -219,27 +413,55 @@ export function ReportGenerator({ onReportGenerated }: ReportGeneratorProps) {
               </Select>
             </div>
 
-            {/* Template Selection */}
-            <div className="space-y-2">
-              <Label>Report Template</Label>
-              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a template..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockReportTemplates.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{template.name}</span>
-                        {template.isDefault && (
-                          <Badge variant="secondary" className="text-xs">Default</Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* AI Generation Toggle */}
+            <Card className="p-4 border-primary/20 bg-primary/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <Label className="text-base font-semibold">AI-Powered Report Generation</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Generate comprehensive reports automatically based on client records
+                    </p>
+                  </div>
+                </div>
+                <Checkbox
+                  checked={useAI}
+                  onCheckedChange={(checked) => {
+                    setUseAI(checked as boolean);
+                    if (checked) {
+                      setSelectedTemplate(''); // Clear template when using AI
+                    }
+                  }}
+                />
+              </div>
+            </Card>
+
+            {/* Template Selection (only if not using AI) */}
+            {!useAI && (
+              <div className="space-y-2">
+                <Label>Report Template</Label>
+                <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a template..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockReportTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        <div className="flex items-center gap-2">
+                          <span>{template.name}</span>
+                          {template.isDefault && (
+                            <Badge variant="secondary" className="text-xs">Default</Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Report Type */}
             <div className="space-y-2">
@@ -292,14 +514,16 @@ export function ReportGenerator({ onReportGenerated }: ReportGeneratorProps) {
               <Button 
                 className="flex-1 gap-2" 
                 onClick={handleGenerateReport}
-                disabled={isGenerating}
+                disabled={isGenerating || aiGenerating}
               >
-                {isGenerating ? (
+                {(isGenerating || aiGenerating) ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
+                ) : useAI ? (
+                  <Sparkles className="w-4 h-4" />
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                {isGenerating ? 'Generating...' : 'Generate & Download PDF'}
+                {aiGenerating ? 'AI Analyzing Records...' : isGenerating ? 'Generating...' : useAI ? 'Generate AI Report' : 'Generate & Download PDF'}
               </Button>
             </div>
           </TabsContent>

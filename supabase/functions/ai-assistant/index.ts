@@ -6,10 +6,17 @@ const corsHeaders = {
 };
 
 interface AIRequest {
-  type: 'suggest_update' | 'generate_weekly' | 'analyze_opportunity';
+  type: 'suggest_update' | 'generate_weekly' | 'analyze_opportunity' | 'generate_report';
   content: string;
   clientType?: string;
   context?: Record<string, unknown>;
+  reportData?: {
+    clientInfo: Record<string, unknown>;
+    dailyUpdates: Array<Record<string, unknown>>;
+    tasks: Array<Record<string, unknown>>;
+    metrics?: Record<string, unknown>;
+    period?: string;
+  };
 }
 
 serve(async (req) => {
@@ -18,7 +25,8 @@ serve(async (req) => {
   }
 
   try {
-    const { type, content, clientType, context } = await req.json() as AIRequest;
+    const requestBody = await req.json() as AIRequest;
+    const { type, content, clientType, context, reportData } = requestBody;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -81,6 +89,68 @@ Format as JSON:
 }`;
         userPrompt = `Client type: ${clientType || 'general'}
 Opportunity: ${content}`;
+        break;
+
+      case 'generate_report':
+        systemPrompt = `You are an AI assistant creating comprehensive client reports for an Amazon agency. 
+Generate a professional, data-driven report based on the provided client records including daily updates, tasks, and metrics.
+
+The report should include:
+1. Executive Summary - High-level overview of the period
+2. Key Accomplishments - Major wins and completed initiatives
+3. Performance Metrics - Data-driven insights and trends
+4. Growth Opportunities - Identified opportunities with potential impact
+5. Challenges & Solutions - Issues encountered and how they were addressed
+6. Next Steps & Recommendations - Actionable items for the upcoming period
+
+Format as JSON:
+{
+  "executiveSummary": "string (2-3 paragraphs)",
+  "keyAccomplishments": ["string array of 5-7 major wins"],
+  "performanceMetrics": {
+    "summary": "string",
+    "highlights": ["string array of key metrics"]
+  },
+  "growthOpportunities": [
+    {
+      "title": "string",
+      "description": "string",
+      "potentialImpact": "high" | "medium" | "low",
+      "recommendedActions": ["string array"]
+    }
+  ],
+  "challenges": [
+    {
+      "challenge": "string",
+      "solution": "string",
+      "status": "resolved" | "in_progress" | "monitoring"
+    }
+  ],
+  "nextSteps": [
+    {
+      "action": "string",
+      "priority": "high" | "medium" | "low",
+      "timeline": "string"
+    }
+  ],
+  "recommendations": ["string array of strategic recommendations"]
+}`;
+        userPrompt = `Generate a comprehensive ${reportData?.period || 'period'} report for:
+
+Client Information:
+${JSON.stringify(reportData?.clientInfo || {}, null, 2)}
+
+Daily Updates (${reportData?.dailyUpdates?.length || 0} entries):
+${JSON.stringify(reportData?.dailyUpdates || [], null, 2)}
+
+Tasks (${reportData?.tasks?.length || 0} entries):
+${JSON.stringify(reportData?.tasks || [], null, 2)}
+
+${reportData?.metrics ? `Performance Metrics:\n${JSON.stringify(reportData.metrics, null, 2)}` : ''}
+
+Client Type: ${clientType || 'general'}
+
+Analyze all the data and create a comprehensive, professional report that tells a cohesive story of the client's progress, achievements, and future opportunities.`;
         break;
 
       default:
