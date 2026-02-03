@@ -62,9 +62,8 @@ export const ProtectedRoute = ({
   if (requireAuth && isAuthenticated && userType !== 'any') {
     if (userType === 'employee') {
       if (!isEmployee) return <Navigate to="/smart-portal" replace />;
-      if (employee && employee.role !== 'CEO') {
-        return <Navigate to="/login" state={{ from: location, restricted: 'CEO only' }} replace />;
-      }
+      // Regular employees can access employee routes, only CEO can access admin routes
+      // Admin routes are checked individually in their components
     }
     if (userType === 'client' && !isClient) {
       return <Navigate to="/" replace />;

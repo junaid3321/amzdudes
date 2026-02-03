@@ -77,14 +77,9 @@ export const RootRedirect = () => {
     );
   }
 
-  // If authenticated as employee (CEO), show dashboard
-  if (isEmployee && employee?.role === 'CEO') {
+  // If authenticated as employee (CEO or regular), show dashboard
+  if (isEmployee) {
     return <Dashboard />;
-  }
-
-  // If authenticated as employee but not CEO, redirect to login with error
-  if (isEmployee && employee?.role !== 'CEO') {
-    return <Navigate to="/login" state={{ restricted: 'CEO only' }} replace />;
   }
 
   // If authenticated but no employee/client record found, show error

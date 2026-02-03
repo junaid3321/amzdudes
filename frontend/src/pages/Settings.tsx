@@ -1,3 +1,4 @@
+import { Navigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardMetricsSettings } from '@/components/settings/DashboardMetricsSettings';
 import { AccountManagement } from '@/components/settings/AccountManagement';
 import { ChangePasswordForm } from '@/components/settings/ChangePasswordForm';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   User, 
   Building, 
@@ -20,10 +22,17 @@ import {
 } from 'lucide-react';
 
 const Settings = () => {
+  const { employee, loading } = useAuth();
+
+  // Settings page is admin-only (CEO only)
+  if (!loading && (!employee || employee.role !== 'CEO')) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <AppLayout 
       title="Settings" 
-      subtitle="Manage your account and preferences"
+      subtitle="Manage your account and preferences (Admin Panel)"
     >
       <Tabs defaultValue="accounts" className="space-y-6">
         <TabsList className="flex-wrap">

@@ -41,6 +41,7 @@ import {
   KeyRound
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -65,9 +66,26 @@ interface Client {
 }
 
 export function AccountManagement() {
+  const { employee, loading: authLoading } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Account Management is CEO-only (admin panel)
+  if (!authLoading && (!employee || employee.role !== 'CEO')) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Access restricted to CEO. This is an admin-only feature.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
   const [creating, setCreating] = useState(false);
   
   // Form state for new account

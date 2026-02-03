@@ -34,13 +34,12 @@ const Login = () => {
   const locationState = location.state as { from?: { pathname: string }; restricted?: string } | null;
   const isRestrictedCEO = locationState?.restricted === 'CEO only';
 
-  // If sent here because access is CEO-only, sign out and show message
+  // If sent here because access is CEO-only (for admin features), show message
   useEffect(() => {
-    if (isRestrictedCEO && isEmployee && employeeSignOut) {
-      employeeSignOut();
-      setError('Access restricted to CEO. Only the CEO can access the internal app.');
+    if (isRestrictedCEO && isEmployee) {
+      setError('Access restricted to CEO. This feature is only available to administrators.');
     }
-  }, [isRestrictedCEO, isEmployee, employeeSignOut]);
+  }, [isRestrictedCEO, isEmployee]);
 
   // Redirect if already authenticated, to the correct home by role (skip when showing CEO restriction)
   useEffect(() => {
@@ -50,7 +49,8 @@ const Login = () => {
 
     const from = locationState?.from?.pathname;
 
-    if (isEmployee && employee?.role === 'CEO') {
+    if (isEmployee) {
+      // All employees (CEO and regular) can access employee dashboard
       const target = from && isEmployeeAllowedFromPath(from) ? from : '/';
       navigate(target, { replace: true });
     } else if (isClient) {
