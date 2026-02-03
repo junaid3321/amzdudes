@@ -10,8 +10,10 @@ import {
   Zap,
   LayoutGrid
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { useClientAuth } from '@/hooks/useClientAuth';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -29,6 +31,15 @@ const bottomNavigation = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut: employeeSignOut } = useAuth();
+  const { signOut: clientSignOut } = useClientAuth();
+
+  const handleLogout = async () => {
+    await employeeSignOut();
+    await clientSignOut();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div className="flex flex-col h-full w-64 bg-sidebar gradient-sidebar">
@@ -90,7 +101,11 @@ export function AppSidebar() {
             </Link>
           );
         })}
-        <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:text-destructive hover:bg-sidebar-accent transition-all duration-200 w-full">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:text-destructive hover:bg-sidebar-accent transition-all duration-200 w-full text-left"
+        >
           <LogOut className="w-5 h-5" />
           <span>Log out</span>
         </button>

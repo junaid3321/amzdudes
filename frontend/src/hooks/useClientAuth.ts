@@ -52,17 +52,37 @@ export function useClientAuth() {
   }, []);
 
   const fetchClientData = async (authUserId: string) => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    
     try {
-      const { data, error } = await supabase
+      // Create a timeout that rejects after 30 seconds
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('Request timeout: Service may be waking up'));
+        }, 30000);
+      });
+
+      const queryPromise = supabase
         .from('clients')
         .select('id, company_name, contact_name, email, client_type, health_score, health_status')
         .eq('auth_user_id', authUserId)
         .maybeSingle();
+
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      const { data, error } = result as any;
       
       if (error) {
         console.error('Error fetching client:', error);
       }
       setClient(data as ClientData | null);
+    } catch (error: any) {
+      if (timeoutId) clearTimeout(timeoutId);
+      console.error('Error fetching client data:', error);
+      // Set loading to false even on timeout so UI doesn't hang
+      setClient(null);
     } finally {
       setLoading(false);
     }

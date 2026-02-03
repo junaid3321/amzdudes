@@ -50,17 +50,37 @@ export function useAuth() {
   }, []);
 
   const fetchEmployeeData = async (authUserId: string) => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    
     try {
-      const { data, error } = await supabase
+      // Create a timeout that rejects after 30 seconds
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('Request timeout: Service may be waking up'));
+        }, 30000);
+      });
+
+      const queryPromise = supabase
         .from('employees')
         .select('id, name, email, role, team_lead_id')
         .eq('auth_user_id', authUserId)
         .maybeSingle();
+
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      const { data, error } = result as any;
       
       if (error) {
         console.error('Error fetching employee:', error);
       }
       setEmployee(data as Employee | null);
+    } catch (error: any) {
+      if (timeoutId) clearTimeout(timeoutId);
+      console.error('Error fetching employee data:', error);
+      // Set loading to false even on timeout so UI doesn't hang
+      setEmployee(null);
     } finally {
       setLoading(false);
     }

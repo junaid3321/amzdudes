@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ import {
   Lock
 } from 'lucide-react';
 import { useClients, DBClient } from '@/hooks/useClients';
+import { useClientAuth } from '@/hooks/useClientAuth';
 import { 
   useDailyUpdates, 
   useWeeklySummaries, 
@@ -84,18 +85,28 @@ const clientTypeConfig = {
 };
 
 const SmartClientPortal = () => {
-  const [searchParams] = useSearchParams();
-  const clientId = searchParams.get('clientId') || '';
-  
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { client: authClient, loading: authLoading } = useClientAuth();
+  const urlClientId = searchParams.get('clientId') || '';
+
   const { clients, updateClient } = useClients();
-  const client = clients.find(c => c.id === clientId);
+  const resolvedClientId = urlClientId || authClient?.id || '';
+  const client = clients.find((c) => c.id === resolvedClientId);
+
+  // When a logged-in client opens /smart-portal with no clientId, use their client id (or add to URL for consistency)
+  useEffect(() => {
+    if (authLoading) return;
+    if (authClient?.id && !urlClientId) {
+      setSearchParams({ clientId: authClient.id }, { replace: true });
+    }
+  }, [authClient?.id, urlClientId, authLoading, setSearchParams]);
   
-  const { updates } = useDailyUpdates(clientId);
-  const { summaries } = useWeeklySummaries(clientId);
-  const { documents, addDocument } = useClientDocuments(clientId);
-  const { meetings, addMeeting } = useClientMeetings(clientId);
-  const { tasks, addTask, updateTask } = useClientTasks(clientId);
-  const { plans } = useClientPlans(clientId);
+  const { updates } = useDailyUpdates(resolvedClientId);
+  const { summaries } = useWeeklySummaries(resolvedClientId);
+  const { documents, addDocument } = useClientDocuments(resolvedClientId);
+  const { meetings, addMeeting } = useClientMeetings(resolvedClientId);
+  const { tasks, addTask, updateTask } = useClientTasks(resolvedClientId);
+  const { plans } = useClientPlans(resolvedClientId);
 
   const [newDocTitle, setNewDocTitle] = useState('');
   const [newDocUrl, setNewDocUrl] = useState('');
@@ -128,7 +139,7 @@ const SmartClientPortal = () => {
   const handleAddDocument = async () => {
     if (!newDocTitle.trim() || !newDocUrl.trim()) return;
     await addDocument({
-      client_id: clientId,
+      client_id: resolvedClientId,
       title: newDocTitle,
       url: newDocUrl,
       doc_type: newDocType as 'product_research' | 'restocking' | 'sop' | 'contract' | 'other',
@@ -143,7 +154,7 @@ const SmartClientPortal = () => {
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return;
     await addTask({
-      client_id: clientId,
+      client_id: resolvedClientId,
       title: newTaskTitle,
       description: newTaskDesc || null,
       assigned_to: null,
@@ -156,6 +167,14 @@ const SmartClientPortal = () => {
     setNewTaskDesc('');
     toast({ title: 'Task Created', description: 'Your team will be notified.' });
   };
+
+  if (authClient && resolvedClientId && !client) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!client) {
     return (

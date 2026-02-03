@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RootRedirect } from "@/components/RootRedirect";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import ClientDetail from "./pages/ClientDetail";
@@ -40,49 +41,183 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route 
-            path="/" 
+          <Route path="/" element={<RootRedirect />} />
+          <Route
+            path="/dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute userType="employee">
                 <Dashboard />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/clients" 
+          <Route
+            path="/clients"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute userType="employee">
                 <Clients />
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route path="/clients/:id" element={<ClientDetail />} />
-          <Route path="/portals" element={<Portals />} />
-          <Route path="/alerts" element={<Alerts />} />
-          <Route path="/activity" element={<Activity />} />
-          <Route path="/opportunities" element={<Opportunities />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/referrals" element={<Referrals />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route
+            path="/clients/:id"
+            element={
+              <ProtectedRoute userType="employee">
+                <ClientDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/portals"
+            element={
+              <ProtectedRoute userType="employee">
+                <Portals />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/alerts"
+            element={
+              <ProtectedRoute userType="employee">
+                <Alerts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/activity"
+            element={
+              <ProtectedRoute userType="employee">
+                <Activity />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/opportunities"
+            element={
+              <ProtectedRoute userType="employee">
+                <Opportunities />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute userType="employee">
+                <Reports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/referrals"
+            element={
+              <ProtectedRoute userType="employee">
+                <Referrals />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute userType="employee">
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/change-password"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute userType="any">
                 <ChangePassword />
               </ProtectedRoute>
             }
           />
-          <Route path="/team-form" element={<TeamUtilizationForm />} />
-          <Route path="/client-feedback" element={<ClientFeedback />} />
-          <Route path="/hiring" element={<Hiring />} />
-          <Route path="/feedback-analytics" element={<FeedbackAnalytics />} />
-          <Route path="/client-portal" element={<ClientPortal />} />
-          <Route path="/client-onboarding" element={<ClientOnboarding />} />
-          <Route path="/employee-portal" element={<EmployeePortal />} />
-          <Route path="/smart-portal" element={<SmartClientPortal />} />
-          <Route path="/wholesaler-portal" element={<WholesalerEmployeePortal />} />
-          <Route path="/employee-auth" element={<EmployeeAuth />} />
-          <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
+          <Route
+            path="/team-form"
+            element={
+              <ProtectedRoute userType="employee">
+                <TeamUtilizationForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/client-feedback"
+            element={
+              <ProtectedRoute userType="employee">
+                <ClientFeedback />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hiring"
+            element={
+              <ProtectedRoute userType="employee">
+                <Hiring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/feedback-analytics"
+            element={
+              <ProtectedRoute userType="employee">
+                <FeedbackAnalytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/client-portal"
+            element={
+              <ProtectedRoute userType="employee">
+                <ClientPortal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/client-onboarding"
+            element={
+              <ProtectedRoute userType="employee">
+                <ClientOnboarding />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee-portal"
+            element={
+              <ProtectedRoute userType="employee">
+                <EmployeePortal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/smart-portal"
+            element={
+              <ProtectedRoute userType="client">
+                <SmartClientPortal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wholesaler-portal"
+            element={
+              <ProtectedRoute userType="employee">
+                <WholesalerEmployeePortal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee-auth"
+            element={
+              <ProtectedRoute userType="employee">
+                <EmployeeAuth />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee-dashboard"
+            element={
+              <ProtectedRoute userType="employee">
+                <EmployeeDashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/client-auth" element={<ClientAuth />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Zap, AlertCircle, Building2, Users, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Zap, AlertCircle, Building2, Users, Eye, EyeOff, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientAuth } from '@/hooks/useClientAuth';
+import { isClientAllowedFromPath, isEmployeeAllowedFromPath } from '@/components/ProtectedRoute';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -16,26 +17,47 @@ const passwordSchema = z.string().min(6, 'Password must be at least 6 characters
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn: employeeSignIn, isAuthenticated: isEmployeeAuth, loading: employeeLoading } = useAuth();
-  const { signIn: clientSignIn, isAuthenticated: isClientAuth, loading: clientLoading } = useClientAuth();
-  
+  const { signIn: employeeSignIn, signOut: employeeSignOut, employee, loading: employeeLoading } = useAuth();
+  const { signIn: clientSignIn, client, loading: clientLoading } = useClientAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState<'employee' | 'client'>('employee');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWakeUpMessage, setShowWakeUpMessage] = useState(false);
 
-  // Redirect if already authenticated
+  const isEmployee = !!employee;
+  const isClient = !!client;
+  const isAuthenticated = isEmployee || isClient;
+  const locationState = location.state as { from?: { pathname: string }; restricted?: string } | null;
+  const isRestrictedCEO = locationState?.restricted === 'CEO only';
+
+  // If sent here because access is CEO-only, sign out and show message
   useEffect(() => {
-    if (!employeeLoading && !clientLoading) {
-      if (isEmployeeAuth || isClientAuth) {
-        // Redirect to the page they were trying to access, or dashboard
-        const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
-        navigate(from, { replace: true });
-      }
+    if (isRestrictedCEO && isEmployee && employeeSignOut) {
+      employeeSignOut();
+      setError('Access restricted to CEO. Only the CEO can access the internal app.');
     }
-  }, [isEmployeeAuth, isClientAuth, employeeLoading, clientLoading, navigate, location]);
+  }, [isRestrictedCEO, isEmployee, employeeSignOut]);
+
+  // Redirect if already authenticated, to the correct home by role (skip when showing CEO restriction)
+  useEffect(() => {
+    if (isRestrictedCEO) return;
+    if (employeeLoading || clientLoading) return;
+    if (!isAuthenticated) return;
+
+    const from = locationState?.from?.pathname;
+
+    if (isEmployee && employee?.role === 'CEO') {
+      const target = from && isEmployeeAllowedFromPath(from) ? from : '/';
+      navigate(target, { replace: true });
+    } else if (isClient) {
+      const target = from && isClientAllowedFromPath(from) ? from : '/smart-portal';
+      navigate(target, { replace: true });
+    }
+  }, [isEmployee, isClient, isAuthenticated, employee?.role, employeeLoading, clientLoading, navigate, location, locationState, isRestrictedCEO]);
 
   const validateInputs = () => {
     try {
@@ -53,40 +75,79 @@ const Login = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setShowWakeUpMessage(false);
     
     if (!validateInputs()) return;
     
     setLoading(true);
     
-    if (userType === 'employee') {
-      const { error } = await employeeSignIn(email, password);
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          setError('Invalid email or password. Please try again.');
-        } else {
-          setError(error.message);
-        }
-      } else {
-        // Redirect to the page they were trying to access, or dashboard
-        const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
-        navigate(from, { replace: true });
-      }
-    } else {
-      const { error } = await clientSignIn(email, password);
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          setError('Invalid email or password. Please try again.');
-        } else {
-          setError(error.message);
-        }
-      } else {
-        // Redirect to the page they were trying to access, or smart portal
-        const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/smart-portal';
-        navigate(from, { replace: true });
-      }
-    }
+    // Show wake-up message after 5 seconds
+    const wakeUpTimer = setTimeout(() => {
+      setShowWakeUpMessage(true);
+    }, 5000);
+
+    let timeoutId: NodeJS.Timeout | null = null;
     
-    setLoading(false);
+    try {
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('Login timeout: Service may be waking up. Please wait and try again.'));
+        }, 30000);
+      });
+
+      if (userType === 'employee') {
+        const signInPromise = employeeSignIn(email, password);
+        const result = await Promise.race([signInPromise, timeoutPromise]);
+        
+        if (timeoutId) clearTimeout(timeoutId);
+        
+        const { error } = result as any;
+        
+        if (error) {
+          if (error.message?.includes('Invalid login credentials')) {
+            setError('Invalid email or password. Please try again.');
+          } else {
+            setError(error.message || 'Login failed. Please try again.');
+          }
+        } else {
+          const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
+          const target = from && isEmployeeAllowedFromPath(from) ? from : '/';
+          navigate(target, { replace: true });
+        }
+      } else {
+        const signInPromise = clientSignIn(email, password);
+        const result = await Promise.race([signInPromise, timeoutPromise]);
+        
+        if (timeoutId) clearTimeout(timeoutId);
+        
+        const { error } = result as any;
+        
+        if (error) {
+          if (error.message?.includes('Invalid login credentials')) {
+            setError('Invalid email or password. Please try again.');
+          } else {
+            setError(error.message || 'Login failed. Please try again.');
+          }
+        } else {
+          const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
+          const target = from && isClientAllowedFromPath(from) ? from : '/smart-portal';
+          navigate(target, { replace: true });
+        }
+      }
+    } catch (err: any) {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (err.message?.includes('timeout')) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      clearTimeout(wakeUpTimer);
+      if (timeoutId) clearTimeout(timeoutId);
+      setLoading(false);
+      setShowWakeUpMessage(false);
+    }
   };
 
   if (employeeLoading || clientLoading) {
@@ -193,6 +254,15 @@ const Login = () => {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {showWakeUpMessage && !error && (
+              <Alert>
+                <Clock className="h-4 w-4" />
+                <AlertDescription>
+                  Service is waking up... Free tier services may take up to 30 seconds to respond after inactivity. Please wait.
+                </AlertDescription>
               </Alert>
             )}
 
