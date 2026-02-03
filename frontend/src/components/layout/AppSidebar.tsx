@@ -67,14 +67,14 @@ export function AppSidebar() {
       <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
         <div className="flex items-center justify-center w-full">
           <img 
-            src={`/logo.png?v=${Date.now()}`}
+            src={`/logo.png?v=3`}
             alt="amzDUDES Logo" 
             className="h-10 w-auto object-contain"
             onError={(e) => {
               // Fallback to amz-logo.png if logo.png fails
               const target = e.target as HTMLImageElement;
               if (!target.src.includes('amz-logo.png')) {
-                target.src = `/amz-logo.png?v=${Date.now()}`;
+                target.src = `/amz-logo.png?v=3`;
               }
             }}
           />

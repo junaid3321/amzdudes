@@ -164,14 +164,14 @@ const Login = () => {
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto mb-4 flex items-center justify-center">
             <img 
-              src={`/logo.png?v=${Date.now()}`}
+              src={`/logo.png?v=3`}
               alt="amzDUDES Logo" 
               className="h-20 w-auto object-contain"
               onError={(e) => {
                 // Fallback to amz-logo.png if logo.png fails
                 const target = e.target as HTMLImageElement;
                 if (!target.src.includes('amz-logo.png')) {
-                  target.src = `/amz-logo.png?v=${Date.now()}`;
+                  target.src = `/amz-logo.png?v=3`;
                 }
               }}
             />
