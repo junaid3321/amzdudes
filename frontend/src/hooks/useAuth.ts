@@ -60,6 +60,7 @@ export function useAuth() {
         }, 30000);
       });
 
+      // First, try to find employee by auth_user_id
       const queryPromise = supabase
         .from('employees')
         .select('id, name, email, role, team_lead_id')
@@ -73,9 +74,59 @@ export function useAuth() {
       const { data, error } = result as any;
       
       if (error) {
-        console.error('Error fetching employee:', error);
+        console.error('Error fetching employee by auth_user_id:', error);
+        throw error;
       }
-      setEmployee(data as Employee | null);
+
+      // If found by auth_user_id, use it
+      if (data) {
+        console.log('[useAuth] Found employee by auth_user_id:', data.email, data.role);
+        setEmployee(data as Employee | null);
+        setLoading(false);
+        return;
+      }
+
+      // If not found by auth_user_id, try to find by email (fallback)
+      // Get user email from auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        console.log('[useAuth] Employee not found by auth_user_id, trying email:', user.email);
+        const emailQueryPromise = supabase
+          .from('employees')
+          .select('id, name, email, role, team_lead_id')
+          .eq('email', user.email)
+          .maybeSingle();
+
+        const emailResult = await Promise.race([emailQueryPromise, timeoutPromise]);
+        const { data: emailData, error: emailError } = emailResult as any;
+
+        if (emailError) {
+          console.error('Error fetching employee by email:', emailError);
+        }
+
+        if (emailData) {
+          console.log('[useAuth] Found employee by email:', emailData.email, emailData.role);
+          // Try to update the employee record with auth_user_id for future lookups
+          const { error: updateError } = await supabase
+            .from('employees')
+            .update({ auth_user_id: authUserId })
+            .eq('id', emailData.id);
+          
+          if (updateError) {
+            console.warn('[useAuth] Could not update auth_user_id:', updateError);
+          } else {
+            console.log('[useAuth] Updated employee record with auth_user_id');
+          }
+          
+          setEmployee(emailData as Employee | null);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // No employee found
+      console.warn('[useAuth] No employee record found for auth user:', authUserId);
+      setEmployee(null);
     } catch (error: any) {
       if (timeoutId) clearTimeout(timeoutId);
       console.error('Error fetching employee data:', error);

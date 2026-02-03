@@ -3,21 +3,40 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientAuth } from '@/hooks/useClientAuth';
 import Dashboard from '@/pages/Dashboard';
-import { Loader2, Clock } from 'lucide-react';
+import { Loader2, Clock, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 /**
  * Root route handler: shows dashboard for authenticated employees (CEO),
  * redirects clients to their portal, and unauthenticated users to login.
  */
 export const RootRedirect = () => {
-  const { employee, loading: employeeLoading } = useAuth();
-  const { client, loading: clientLoading } = useClientAuth();
+  const { employee, loading: employeeLoading, isAuthenticated: isEmployeeAuth, user: employeeUser } = useAuth();
+  const { client, loading: clientLoading, isAuthenticated: isClientAuth } = useClientAuth();
   const [showWakeUpMessage, setShowWakeUpMessage] = useState(false);
 
   const loading = employeeLoading || clientLoading;
   const isEmployee = !!employee;
   const isClient = !!client;
+  const isAuthenticated = isEmployeeAuth || isClientAuth;
+
+  // Debug logging
+  useEffect(() => {
+    if (!loading) {
+      console.log('[RootRedirect] Auth state:', {
+        employeeLoading,
+        clientLoading,
+        isEmployeeAuth,
+        isClientAuth,
+        isEmployee,
+        isClient,
+        employee: employee ? { id: employee.id, email: employee.email, role: employee.role } : null,
+        client: client ? { id: client.id, email: client.email } : null,
+        employeeUserEmail: employeeUser?.email,
+      });
+    }
+  }, [loading, employeeLoading, clientLoading, isEmployeeAuth, isClientAuth, isEmployee, isClient, employee, client, employeeUser]);
 
   // Show wake-up message if loading takes more than 5 seconds
   useEffect(() => {
@@ -61,6 +80,34 @@ export const RootRedirect = () => {
   // If authenticated as employee (CEO), show dashboard
   if (isEmployee && employee?.role === 'CEO') {
     return <Dashboard />;
+  }
+
+  // If authenticated as employee but not CEO, redirect to login with error
+  if (isEmployee && employee?.role !== 'CEO') {
+    return <Navigate to="/login" state={{ restricted: 'CEO only' }} replace />;
+  }
+
+  // If authenticated but no employee/client record found, show error
+  if (isAuthenticated && !isEmployee && !isClient) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Account Setup Issue</strong>
+                <br />
+                You are logged in ({employeeUser?.email || 'unknown email'}), but no employee or client record was found.
+                <br />
+                <br />
+                Please contact your administrator to set up your account, or run the CEO setup script if this is the CEO account.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // If authenticated as client, redirect to client portal
