@@ -21,9 +21,9 @@ export const RootRedirect = () => {
   const isClient = !!client;
   const isAuthenticated = isEmployeeAuth || isClientAuth;
 
-  // Debug logging
+  // Debug logging (only in development)
   useEffect(() => {
-    if (!loading) {
+    if (import.meta.env.DEV && !loading) {
       console.log('[RootRedirect] Auth state:', {
         employeeLoading,
         clientLoading,

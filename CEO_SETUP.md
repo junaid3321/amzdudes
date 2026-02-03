@@ -7,33 +7,54 @@ Only users with **role = 'CEO'** in the `employees` table can access the interna
 - **Login email:** `junaid@amzdudes.com`
 - **Temporary password:** `admin123` (must be changed after first login via **Settings → Security**)
 
-## 1. Apply the migration
+## Quick Setup (Recommended)
 
-Ensure the CEO employee row exists:
-
-```bash
-# If using Supabase CLI
-supabase db push
-
-# Or run the migration SQL in Supabase Dashboard → SQL Editor:
-# supabase/migrations/20260127120000_ceo_junaid.sql
-```
-
-That inserts/updates an employee with `name = 'Junaid'`, `email = 'junaid@amzdudes.com'`, `role = 'CEO'`.
-
-## 2. Create auth user and link (one-time)
-
-From the **repo root**, using credentials from `backend/.env`:
+**One command to set up everything:**
 
 ```bash
-node scripts/create-ceo-user.mjs
+node scripts/setup-ceo-complete.mjs
 ```
 
-Or set env manually:
+This script will:
+- Create/update the employee record in the database
+- Create the auth user with password `admin123`
+- Link them together
+- Save everything to the database
 
-```bash
-SUPABASE_URL=https://your-project.supabase.co SUPABASE_SERVICE_ROLE_KEY=your-service-role-key node scripts/create-ceo-user.mjs
-```
+## Manual Setup (Alternative)
+
+### Option 1: SQL + Script
+
+1. **Run SQL in Supabase Dashboard → SQL Editor:**
+   ```sql
+   -- Run scripts/setup-ceo-account.sql
+   INSERT INTO public.employees (name, email, role)
+   VALUES ('Junaid', 'junaid@amzdudes.com', 'CEO')
+   ON CONFLICT (email) DO UPDATE SET
+     name = EXCLUDED.name,
+     role = EXCLUDED.role;
+   ```
+
+2. **Then run the script:**
+   ```bash
+   node scripts/create-ceo-user.mjs
+   ```
+
+### Option 2: Migration + Script
+
+1. **Apply the migration:**
+   ```bash
+   # If using Supabase CLI
+   supabase db push
+   
+   # Or run in Supabase Dashboard → SQL Editor:
+   # supabase/migrations/20260127120000_ceo_junaid.sql
+   ```
+
+2. **Create auth user and link:**
+   ```bash
+   node scripts/create-ceo-user.mjs
+   ```
 
 This creates the Supabase Auth user with the temporary password and sets `employees.auth_user_id` for the CEO row.
 

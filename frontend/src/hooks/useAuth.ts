@@ -80,7 +80,9 @@ export function useAuth() {
 
       // If found by auth_user_id, use it
       if (data) {
-        console.log('[useAuth] Found employee by auth_user_id:', data.email, data.role);
+        if (import.meta.env.DEV) {
+          console.log('[useAuth] Found employee by auth_user_id:', data.email, data.role);
+        }
         setEmployee(data as Employee | null);
         setLoading(false);
         return;
@@ -90,7 +92,9 @@ export function useAuth() {
       // Get user email from auth
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.email) {
-        console.log('[useAuth] Employee not found by auth_user_id, trying email:', user.email);
+        if (import.meta.env.DEV) {
+          console.log('[useAuth] Employee not found by auth_user_id, trying email:', user.email);
+        }
         const emailQueryPromise = supabase
           .from('employees')
           .select('id, name, email, role, team_lead_id')
@@ -105,7 +109,9 @@ export function useAuth() {
         }
 
         if (emailData) {
-          console.log('[useAuth] Found employee by email:', emailData.email, emailData.role);
+          if (import.meta.env.DEV) {
+            console.log('[useAuth] Found employee by email:', emailData.email, emailData.role);
+          }
           // Try to update the employee record with auth_user_id for future lookups
           const { error: updateError } = await supabase
             .from('employees')
@@ -113,9 +119,13 @@ export function useAuth() {
             .eq('id', emailData.id);
           
           if (updateError) {
-            console.warn('[useAuth] Could not update auth_user_id:', updateError);
+            if (import.meta.env.DEV) {
+              console.warn('[useAuth] Could not update auth_user_id:', updateError);
+            }
           } else {
-            console.log('[useAuth] Updated employee record with auth_user_id');
+            if (import.meta.env.DEV) {
+              console.log('[useAuth] Updated employee record with auth_user_id');
+            }
           }
           
           setEmployee(emailData as Employee | null);
@@ -125,7 +135,9 @@ export function useAuth() {
       }
 
       // No employee found
-      console.warn('[useAuth] No employee record found for auth user:', authUserId);
+      if (import.meta.env.DEV) {
+        console.warn('[useAuth] No employee record found for auth user:', authUserId);
+      }
       setEmployee(null);
     } catch (error: any) {
       if (timeoutId) clearTimeout(timeoutId);
