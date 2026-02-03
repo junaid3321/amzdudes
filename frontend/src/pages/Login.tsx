@@ -164,9 +164,16 @@ const Login = () => {
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto mb-4 flex items-center justify-center">
             <img 
-              src="/amz-logo.png" 
+              src="/logo.png" 
               alt="amzDUDES Logo" 
               className="h-20 w-auto object-contain"
+              onError={(e) => {
+                // Fallback to amz-logo.png if logo.png fails
+                const target = e.target as HTMLImageElement;
+                if (target.src !== `${window.location.origin}/amz-logo.png`) {
+                  target.src = '/amz-logo.png';
+                }
+              }}
             />
           </div>
           <div>
