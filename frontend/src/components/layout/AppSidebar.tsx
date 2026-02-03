@@ -32,14 +32,35 @@ const bottomNavigation = [
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut: employeeSignOut } = useAuth();
-  const { signOut: clientSignOut } = useClientAuth();
+  const { signOut: employeeSignOut, employee, user: employeeUser } = useAuth();
+  const { signOut: clientSignOut, client } = useClientAuth();
 
   const handleLogout = async () => {
     await employeeSignOut();
     await clientSignOut();
     navigate('/login', { replace: true });
   };
+
+  // Get user info for display
+  const displayName = employee?.name || client?.contact_name || employeeUser?.email?.split('@')[0] || 'User';
+  const displayRole = employee?.role === 'CEO' 
+    ? 'CEO' 
+    : employee?.role 
+    ? 'Employee' 
+    : client 
+    ? 'Client' 
+    : 'User';
+  
+  // Generate initials from name
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+  
+  const initials = getInitials(displayName);
 
   return (
     <div className="flex flex-col h-full w-64 bg-sidebar gradient-sidebar">
@@ -115,11 +136,11 @@ export function AppSidebar() {
       <div className="px-4 py-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-semibold text-primary-foreground">
-            JD
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-sidebar-foreground truncate">John Doe</p>
-            <p className="text-xs text-sidebar-foreground/60 truncate">Agency Owner</p>
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{displayName}</p>
+            <p className="text-xs text-sidebar-foreground/60 truncate">{displayRole}</p>
           </div>
         </div>
       </div>

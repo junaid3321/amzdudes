@@ -11,6 +11,7 @@ import { DashboardMetricsSettings } from '@/components/settings/DashboardMetrics
 import { AccountManagement } from '@/components/settings/AccountManagement';
 import { ChangePasswordForm } from '@/components/settings/ChangePasswordForm';
 import { useAuth } from '@/hooks/useAuth';
+import { useClientAuth } from '@/hooks/useClientAuth';
 import { 
   User, 
   Building, 
@@ -22,7 +23,28 @@ import {
 } from 'lucide-react';
 
 const Settings = () => {
-  const { employee, loading } = useAuth();
+  const { employee, loading, user: employeeUser } = useAuth();
+  const { client } = useClientAuth();
+
+  // Get user info for display
+  const displayName = employee?.name || client?.contact_name || employeeUser?.email?.split('@')[0] || 'User';
+  const displayEmail = employee?.email || client?.email || employeeUser?.email || '';
+  
+  // Generate initials from name
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+  
+  const initials = getInitials(displayName);
+  
+  // Parse name into first and last name
+  const nameParts = displayName.trim().split(/\s+/);
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || '';
 
   // Settings page is admin-only (CEO only)
   if (!loading && (!employee || employee.role !== 'CEO')) {
@@ -87,7 +109,7 @@ const Settings = () => {
             <CardContent className="space-y-6">
               <div className="flex items-center gap-6">
                 <div className="w-20 h-20 rounded-full gradient-primary flex items-center justify-center text-2xl font-bold text-primary-foreground">
-                  JD
+                  {initials}
                 </div>
                 <Button variant="outline">Change Avatar</Button>
               </div>
@@ -95,19 +117,19 @@ const Settings = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" defaultValue="John" />
+                  <Input id="firstName" defaultValue={firstName} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" defaultValue="Doe" />
+                  <Input id="lastName" defaultValue={lastName} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue="john@agency.com" />
+                  <Input id="email" type="email" defaultValue={displayEmail} disabled />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" defaultValue="+1 (555) 123-4567" />
+                  <Input id="phone" defaultValue="" placeholder="Not set" />
                 </div>
               </div>
               <Button>Save Changes</Button>
