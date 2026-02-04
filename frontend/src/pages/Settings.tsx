@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardMetricsSettings } from '@/components/settings/DashboardMetricsSettings';
 import { AccountManagement } from '@/components/settings/AccountManagement';
 import { ChangePasswordForm } from '@/components/settings/ChangePasswordForm';
+import { DataImport } from '@/components/settings/DataImport';
 import { useAuth } from '@/hooks/useAuth';
 import { useClientAuth } from '@/hooks/useClientAuth';
 import { 
@@ -19,7 +20,8 @@ import {
   Link, 
   BarChart3,
   KeyRound,
-  Shield
+  Shield,
+  Upload
 } from 'lucide-react';
 
 const Settings = () => {
@@ -88,6 +90,10 @@ const Settings = () => {
           <TabsTrigger value="integrations" className="gap-2">
             <Link className="w-4 h-4" />
             Integrations
+          </TabsTrigger>
+          <TabsTrigger value="import" className="gap-2">
+            <Upload className="w-4 h-4" />
+            Data Import
           </TabsTrigger>
         </TabsList>
 
@@ -202,6 +208,10 @@ const Settings = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="import">
+          <DataImport />
         </TabsContent>
 
         <TabsContent value="integrations">
