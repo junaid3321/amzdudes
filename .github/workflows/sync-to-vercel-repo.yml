@@ -41,11 +41,26 @@ jobs:
 
       - name: Verify repository access
         run: |
-          git ls-remote target || echo "Repository not accessible. Please check if repository exists and token has access."
+          if ! git ls-remote target; then
+            echo "❌ Repository not accessible. Please check:"
+            echo "   1. Repository 'amzdudesai02-rgb/amzdudes' exists"
+            echo "   2. VERCEL_REPO_TOKEN secret is set in repository settings"
+            echo "   3. Token has 'repo' scope and write access to target repository"
+            exit 1
+          else
+            echo "✅ Repository access verified"
+          fi
 
       - name: Push to target repository
         run: |
-          git push target HEAD:main --force
+          echo "Pushing to target repository..."
+          if git push target HEAD:main --force; then
+            echo "✅ Successfully synced to target repository"
+          else
+            echo "❌ Failed to push to target repository"
+            echo "Check the error above for details"
+            exit 1
+          fi
         env:
           GIT_ASKPASS: echo
           GIT_TERMINAL_PROMPT: 0
