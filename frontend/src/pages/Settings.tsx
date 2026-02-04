@@ -61,40 +61,48 @@ const Settings = () => {
       title="Settings" 
       subtitle="Manage your account and preferences (Admin Panel)"
     >
-      <Tabs defaultValue="accounts" className="space-y-6">
+      <Tabs defaultValue={isAuthorizedCEO ? "accounts" : "security"} className="space-y-6">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="accounts" className="gap-2">
-            <KeyRound className="w-4 h-4" />
-            Accounts
-          </TabsTrigger>
+          {isAuthorizedCEO && (
+            <>
+              <TabsTrigger value="accounts" className="gap-2">
+                <KeyRound className="w-4 h-4" />
+                Accounts
+              </TabsTrigger>
+              <TabsTrigger value="import" className="gap-2">
+                <Upload className="w-4 h-4" />
+                Data Import
+              </TabsTrigger>
+            </>
+          )}
           <TabsTrigger value="security" className="gap-2">
             <Shield className="w-4 h-4" />
             Security
           </TabsTrigger>
-          <TabsTrigger value="metrics" className="gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Dashboard Metrics
-          </TabsTrigger>
-          <TabsTrigger value="profile" className="gap-2">
-            <User className="w-4 h-4" />
-            Profile
-          </TabsTrigger>
-          <TabsTrigger value="agency" className="gap-2">
-            <Building className="w-4 h-4" />
-            Agency
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2">
-            <Bell className="w-4 h-4" />
-            Notifications
-          </TabsTrigger>
-          <TabsTrigger value="integrations" className="gap-2">
-            <Link className="w-4 h-4" />
-            Integrations
-          </TabsTrigger>
-          <TabsTrigger value="import" className="gap-2">
-            <Upload className="w-4 h-4" />
-            Data Import
-          </TabsTrigger>
+          {isAuthorizedCEO && (
+            <>
+              <TabsTrigger value="metrics" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Dashboard Metrics
+              </TabsTrigger>
+              <TabsTrigger value="profile" className="gap-2">
+                <User className="w-4 h-4" />
+                Profile
+              </TabsTrigger>
+              <TabsTrigger value="agency" className="gap-2">
+                <Building className="w-4 h-4" />
+                Agency
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="gap-2">
+                <Bell className="w-4 h-4" />
+                Notifications
+              </TabsTrigger>
+              <TabsTrigger value="integrations" className="gap-2">
+                <Link className="w-4 h-4" />
+                Integrations
+              </TabsTrigger>
+            </>
+          )}
         </TabsList>
 
         <TabsContent value="accounts">
