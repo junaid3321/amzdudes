@@ -165,14 +165,14 @@ const Login = () => {
         <div className="text-center mb-8">
           <div className="mx-auto mb-6 flex items-center justify-center">
             <img 
-              src={`/logo.png?v=${Date.now()}`}
+              src={`/logo.png?t=${new Date().getTime()}&v=7`}
               alt="amzDUDES Logo" 
               className="h-24 w-auto object-contain drop-shadow-sm"
               onError={(e) => {
                 // Fallback to amz-logo.png if logo.png fails
                 const target = e.target as HTMLImageElement;
                 if (!target.src.includes('amz-logo.png')) {
-                  target.src = `/amz-logo.png?v=${Date.now()}`;
+                  target.src = `/amz-logo.png?t=${new Date().getTime()}&v=7`;
                 }
               }}
             />
