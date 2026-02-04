@@ -21,7 +21,8 @@ import {
   BarChart3,
   KeyRound,
   Shield,
-  Upload
+  Upload,
+  Loader2
 } from 'lucide-react';
 
 const Settings = () => {
@@ -52,7 +53,19 @@ const Settings = () => {
   const userEmail = employeeUser?.email || employee?.email || '';
   const isAuthorizedCEO = employee?.role === 'CEO' && userEmail === 'junaid@amzdudes.com';
   
-  if (!loading && !isAuthorizedCEO) {
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <AppLayout title="Settings" subtitle="Loading...">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
+  
+  // Redirect non-CEO users immediately
+  if (!isAuthorizedCEO) {
     return <Navigate to="/" replace />;
   }
 
@@ -61,48 +74,40 @@ const Settings = () => {
       title="Settings" 
       subtitle="Manage your account and preferences (Admin Panel)"
     >
-      <Tabs defaultValue={isAuthorizedCEO ? "accounts" : "security"} className="space-y-6">
+      <Tabs defaultValue="accounts" className="space-y-6">
         <TabsList className="flex-wrap">
-          {isAuthorizedCEO && (
-            <>
-              <TabsTrigger value="accounts" className="gap-2">
-                <KeyRound className="w-4 h-4" />
-                Accounts
-              </TabsTrigger>
-              <TabsTrigger value="import" className="gap-2">
-                <Upload className="w-4 h-4" />
-                Data Import
-              </TabsTrigger>
-            </>
-          )}
+          <TabsTrigger value="accounts" className="gap-2">
+            <KeyRound className="w-4 h-4" />
+            Accounts
+          </TabsTrigger>
+          <TabsTrigger value="import" className="gap-2">
+            <Upload className="w-4 h-4" />
+            Data Import
+          </TabsTrigger>
           <TabsTrigger value="security" className="gap-2">
             <Shield className="w-4 h-4" />
             Security
           </TabsTrigger>
-          {isAuthorizedCEO && (
-            <>
-              <TabsTrigger value="metrics" className="gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Dashboard Metrics
-              </TabsTrigger>
-              <TabsTrigger value="profile" className="gap-2">
-                <User className="w-4 h-4" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger value="agency" className="gap-2">
-                <Building className="w-4 h-4" />
-                Agency
-              </TabsTrigger>
-              <TabsTrigger value="notifications" className="gap-2">
-                <Bell className="w-4 h-4" />
-                Notifications
-              </TabsTrigger>
-              <TabsTrigger value="integrations" className="gap-2">
-                <Link className="w-4 h-4" />
-                Integrations
-              </TabsTrigger>
-            </>
-          )}
+          <TabsTrigger value="metrics" className="gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Dashboard Metrics
+          </TabsTrigger>
+          <TabsTrigger value="profile" className="gap-2">
+            <User className="w-4 h-4" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="agency" className="gap-2">
+            <Building className="w-4 h-4" />
+            Agency
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-2">
+            <Bell className="w-4 h-4" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="integrations" className="gap-2">
+            <Link className="w-4 h-4" />
+            Integrations
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="accounts">
